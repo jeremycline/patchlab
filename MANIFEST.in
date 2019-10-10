@@ -1,0 +1,7 @@
+include LICENSE
+include README.rst
+include requirements.txt
+include dev-requirements.txt
+include tox.ini
+graft docs
+prune docs/_build

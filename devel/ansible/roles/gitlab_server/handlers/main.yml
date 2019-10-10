@@ -1,0 +1,10 @@
+- name: reload sshd
+  service:
+    name: sshd
+    state: reloaded
+
+- name: reconfigure gitlab
+  command: gitlab-ctl reconfigure
+
+- name: reload firewalld
+  command: firewall-cmd --reload

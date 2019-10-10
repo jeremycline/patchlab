@@ -1,0 +1,7 @@
+# VIRTUAL(5)                                                          VIRTUAL(5)
+# 
+# NAME
+#        virtual - Postfix virtual alias table format
+#
+# Alias all users to vagrant so it receives all mail
+/.*/ vagrant

@@ -1,0 +1,88 @@
+---
+
+- import_tasks: db.yml
+- import_tasks: postfix.yml
+
+- name: Install helpful development packages
+  package: name={{ item }} state=present
+  with_items:
+    - git
+    - vim-enhanced
+    - python3-virtualenvwrapper
+
+- name: Install system dependencies for Python packages
+  package: name={{ item }} state=present
+  with_items:
+    - gcc
+    - make
+    - libffi-devel
+    - openssl-devel
+    - postgresql-devel
+    - python3-devel
+    - mariadb
+    - mariadb-devel
+
+# Add various helpful configuration files
+- name: Install a custom bashrc
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  copy: src=bashrc dest=/home/{{ ansible_env.SUDO_USER }}/.bashrc
+
+- name: Install the message of the day
+  copy: src=motd dest=/etc/motd
+
+- name: Create virtualenv
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  shell: >
+      source ~/.bashrc && mkvirtualenv --python=python3 pw -a ~/patchwork
+  args:
+    creates: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw
+
+- name: Install development requirements into the virtualenv
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  pip:
+    requirements: "/home/{{ ansible_env.SUDO_USER }}/patchwork/requirements-dev.txt"
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    virtualenv_python: python3
+
+- name: Install Patchwork into the virtualenv
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  pip:
+    name: "/home/{{ ansible_env.SUDO_USER }}/patchwork"
+    extra_args: "-e"
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    virtualenv_python: python3
+
+- name: Install Tox
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  pip:
+    name: tox
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    virtualenv_python: python3
+
+- name: Run the initial database migrations
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  shell: >
+      source ~/.bashrc && workon pw && ./manage.py migrate && touch ~/.database_migrated
+  args:
+    creates: /home/{{ ansible_env.SUDO_USER }}/.database_migrated
+
+- name: Create user systemd directory
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  file:
+    path: /home/{{ ansible_env.SUDO_USER }}/.config/systemd/user/
+    state: directory
+
+- name: Install the patchwork systemd service file
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  copy:
+    src: patchwork.service
+    dest: /home/{{ ansible_env.SUDO_USER }}/.config/systemd/user/
+
+- name: Start the Patchwork development server
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  systemd:
+    name: patchwork.service
+    state: started
+    enabled: yes
+    scope: user
+    daemon_reload: yes

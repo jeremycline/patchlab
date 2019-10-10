@@ -1,0 +1,71 @@
+- name: install web packages
+  yum:
+    name: "{{ packages }}"
+    state: present
+
+- name: copy repo file
+  template:
+    src: gitlab_gitlab-ce.repo
+    dest: /etc/yum.repos.d/gitlab_gitlab-ce.repo
+    owner: root
+    group: root
+    mode: 0644
+
+- name: install gitlab-ce
+  yum:
+    name: gitlab-ce
+    state: present
+
+- name: add server name to config
+  lineinfile:
+    dest: /etc/gitlab/gitlab.rb
+    regexp: '^external_url.*'
+    line: 'external_url "https://{{ server_name }}"'
+    backrefs: true
+  notify: reconfigure gitlab
+
+- name: Create self-signed certificate
+  command: >
+    openssl req -x509 -nodes -subj '/CN={{ ansible_fqdn }}' -days 365
+    -newkey rsa:2048 -sha256 -keyout /etc/gitlab/{{ ansible_fqdn }}.key -out /etc/gitlab/{{ ansible_fqdn }}.crt
+  args:
+    creates: "{{ certfile }}"
+
+- name: configure /etc/gitlab/gitlab.rb
+  blockinfile:
+    path: /etc/gitlab/gitlab.rb
+    block: |
+      nginx['redirect_http_to_https'] = true
+      nginx['ssl_certificate'] = "/etc/gitlab/{{ ansible_fqdn }}.crt"
+      nginx['ssl_certificate_key'] = "/etc/gitlab/{{ ansible_fqdn }}.key"
+      nginx['listen_addresses'] = ["0.0.0.0", "[::]"]
+      gitlab_rails['gitlab_shell_ssh_port'] = {{ gitlab_sshd_port }}
+      gitlab_rails['smtp_enable'] = true
+      gitlab_rails['smtp_address'] = 'localhost'
+      gitlab_rails['smtp_port'] = 25
+      gitlab_rails['smtp_domain'] = 'localhost'
+      gitlab_rails['smtp_tls'] = false
+      gitlab_rails['smtp_openssl_verify_mode'] = 'none'
+      gitlab_rails['smtp_enable_starttls_auto'] = false
+      gitlab_rails['smtp_ssl'] = false
+      gitlab_rails['smtp_force_ssl'] = false
+      letsencrypt['enable'] = false
+  notify: reconfigure gitlab
+
+- name: listen on non-standard ssh port
+  blockinfile:
+    path: /etc/ssh/sshd_config
+    marker: "# {mark} ANSIBLE MANAGED GITLAB BLOCK"
+    insertbefore: BOF
+    block: |
+      Port 22
+      Port {{ gitlab_sshd_port }}
+  notify: reload sshd
+
+- name: setup selinux for alternate SSH port
+  seport:
+    ports: "{{ gitlab_sshd_port }}"
+    proto: "tcp"
+    setype: "ssh_port_t"
+    state: "present"
+  notify: reload sshd

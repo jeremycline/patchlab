@@ -1,0 +1,17 @@
+Welcome to the patchlab development environment!
+
+Here are some tips:
+
+* The code is located at ~/patchlab and ~/patchwork
+
+* Start and stop the development server with
+  `systemctl --user {action} patchwork.service`
+
+* All logs are viewable through `journalctl`
+
+* You can type `workon pw` to enter a configured Python virtualenv
+
+Once you start the development server, you can navigate to http://localhost:8000/
+in your host's browser.
+
+Happy hacking!

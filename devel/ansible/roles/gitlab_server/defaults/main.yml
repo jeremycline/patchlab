@@ -1,0 +1,13 @@
+firewalld_zone: public
+
+packages:
+  - python-firewall
+  - libsemanage-python
+  - policycoreutils-python
+  - pygpgme
+  - yum-utils
+
+server_name: gitlab.example.com
+gitlab_sshd_port: 2222
+keyfile: "/etc/pki/tls/private/gitlab.key"
+certfile: "/etc/pki/tls/certs/gitlab.crt"
