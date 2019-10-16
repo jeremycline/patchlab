@@ -2,6 +2,7 @@
 
 - import_tasks: db.yml
 - import_tasks: postfix.yml
+- import_tasks: rabbitmq.yml
 
 - name: Install helpful development packages
   package: name={{ item }} state=present
