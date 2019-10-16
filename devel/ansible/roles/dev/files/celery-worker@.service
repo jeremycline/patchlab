@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery worker
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/vagrant/.virtualenvs/pw/bin/celery worker --pool=prefork --concurrency=1 -E -A PatchLab -l info -n celery-worker%i@%H
+
+[Install]
+WantedBy=multi-user.target
+
+[Install]
+WantedBy=multi-user.target

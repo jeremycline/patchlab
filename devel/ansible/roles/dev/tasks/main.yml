@@ -53,6 +53,14 @@
     virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
     virtualenv_python: python3
 
+- name: Install patchlab into the virtualenv
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  pip:
+    name: "/home/{{ ansible_env.SUDO_USER }}/patchlab"
+    extra_args: "-e"
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    virtualenv_python: python3
+
 - name: Install Tox
   become_user: "{{ ansible_env.SUDO_USER }}"
   pip:
@@ -73,11 +81,14 @@
     path: /home/{{ ansible_env.SUDO_USER }}/.config/systemd/user/
     state: directory
 
-- name: Install the patchwork systemd service file
+- name: Install the systemd service files
   become_user: "{{ ansible_env.SUDO_USER }}"
   copy:
-    src: patchwork.service
+    src: "{{ item }}"
     dest: /home/{{ ansible_env.SUDO_USER }}/.config/systemd/user/
+  with_items:
+    - patchwork.service
+    - celery-worker@.service
 
 - name: Start the Patchwork development server
   become_user: "{{ ansible_env.SUDO_USER }}"
@@ -87,3 +98,15 @@
     enabled: yes
     scope: user
     daemon_reload: yes
+
+- name: Start two celery workers
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  systemd:
+    name: "celery-worker@{{ item }}.service"
+    state: started
+    enabled: yes
+    scope: user
+    daemon_reload: yes
+  with_items:
+    - "1"
+    - "2"
