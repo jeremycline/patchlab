@@ -6,6 +6,10 @@
       - postgresql-devel
       - postgresql
       - python3-psycopg2
+      - mariadb-server
+      - mariadb-devel
+      - mariadb
+      - python3-PyMySQL
 
 - name: check for postgres db
   find:
@@ -45,12 +49,39 @@
   become: true
   become_user: postgres
 
+- name: Create databases
+  postgresql_db:
+    name: "patchwork_test"
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+  become: true
+  become_user: postgres
+
 - name: Create database users
   postgresql_user:
     state: present
     db: "patchwork"
     name: "patchwork"
     password: "password"
-    role_attr_flags: NOSUPERUSER,NOCREATEROLE,NOCREATEDB
+    role_attr_flags: SUPERUSER,CREATEROLE,CREATEDB
   become: true
   become_user: postgres
+
+- service:
+    name: mariadb
+    state: started
+    enabled: yes
+
+- name: Add patchwork mysql database
+  mysql_db:
+    name: patchwork
+    state: present
+
+- name: Add patchwork user
+  mysql_user:
+    name: patchwork
+    password: password
+    priv: '*.*:ALL'
+    state: present
