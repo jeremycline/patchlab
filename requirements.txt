@@ -1,3 +1,4 @@
 celery
 django
 requests
+python-gitlab

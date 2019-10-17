@@ -59,7 +59,9 @@ def email_merge_request(project_id: int, merge_id: int) -> None:
         # This currently only works for public projects; authenticating with a
         # token does not work.
         # https://gitlab.com/gitlab-org/gitlab/issues/26228
-        response = gitlab.session.get(f"{project_url}/root/kernel/{commit.id}.patch")
+        response = gitlab.session.get(
+            f"{project_url}/root/kernel/commit/{commit.id}.patch"
+        )
         response.raise_for_status()
         patches.append(response.text)
 
@@ -70,17 +72,36 @@ def email_merge_request(project_id: int, merge_id: int) -> None:
 
         for i, patch in enumerate(patches, 1):
             with open(os.path.join(dirname, f"{str(i).zfill(4)}-.patch"), "w") as fd:
-                fd.write(patch.as_string())
+                fd.write(patch)
 
+        # Weird hack - git send-email won't do it outside a git repo with at least one commit.
+        subprocess.run(["git", "init", dirname], check=True)
+        subprocess.run(["git", "-C", dirname, "add", "-A"], check=True)
         subprocess.run(
             [
                 "git",
+                "-C",
+                dirname,
+                "commit",
+                '--author="Nobody <nobody@example.com>"',
+                "-m",
+                "Nothing",
+            ],
+            check=True,
+        )
+        result = subprocess.run(
+            [
+                "git",
+                "-C",
+                dirname,
                 "send-email",
                 f"--to={project_list}",
                 f'--subject-prefix="{subject_prefix}"',
                 dirname,
-            ]
+            ],
+            capture_output=True,
         )
+        print(result)
 
 
 @shared_task
