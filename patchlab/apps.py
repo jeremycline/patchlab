@@ -10,6 +10,7 @@ class PatchlabConfig(AppConfig):
     for application initialization. Refer to documentation at
     https://docs.djangoproject.com/en/dev/ref/applications/ for available hooks.
     """
+
     name = "patchlab"
 
     def ready(self):

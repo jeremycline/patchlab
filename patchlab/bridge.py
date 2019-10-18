@@ -130,14 +130,18 @@ def open_merge_request(title: str, branch_name: str, mbox: str) -> None:
 
     # TODO: This could fail if the network is borked. We want to retry if this fails.
     try:
-        subprocess.run(["git", "-C", forge["repo_path"], "pull"], timeout=60, check=True)
+        subprocess.run(
+            ["git", "-C", forge["repo_path"], "pull"], timeout=60, check=True
+        )
     except subprocess.TimeoutExpired:
         raise
     except subprocess.CalledProcessError:
         raise
 
     try:
-        subprocess.run(["git", "-C", forge["repo_path"], "branch", "-D", branch_name], check=False)
+        subprocess.run(
+            ["git", "-C", forge["repo_path"], "branch", "-D", branch_name], check=False
+        )
         subprocess.run(
             ["git", "-C", forge["repo_path"], "checkout", "-b", branch_name], check=True
         )
@@ -147,10 +151,7 @@ def open_merge_request(title: str, branch_name: str, mbox: str) -> None:
 
     try:
         subprocess.run(
-            ["git", "-C", forge["repo_path"], "am"],
-            input=mbox,
-            text=True,
-            check=True,
+            ["git", "-C", forge["repo_path"], "am"], input=mbox, text=True, check=True
         )
     except subprocess.CalledProcessError:
         # TODO git-am exited non-zero, complain to the developer with actionable info.
@@ -202,7 +203,9 @@ if __name__ == "__main__":
             branch_name = f'emails/series-{event["payload"]["series"]["id"]}'
             mbox = session.get(event["payload"]["series"]["mbox"], timeout=30)
             if not pr_exists(GITLAB_PROJECT_ID, branch_name):
-                open_merge_request(event["payload"]["series"]["name"], branch_name, mbox.text)
+                open_merge_request(
+                    event["payload"]["series"]["name"], branch_name, mbox.text
+                )
 
             with open("last_event", "w") as f:
                 f.write(event["date"])

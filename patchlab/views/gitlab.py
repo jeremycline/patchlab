@@ -37,7 +37,9 @@ def merge_request(request: http.HttpRequest) -> http.HttpResponse:
     except KeyError:
         return http.HttpResponseBadRequest("Payload expected to have labels")
 
-    email_merge_request.apply_async((payload["project"]["id"], payload["object_attributes"]["id"]))
+    email_merge_request.apply_async(
+        (payload["project"]["id"], payload["object_attributes"]["id"])
+    )
     return http.HttpResponse()
 
 
