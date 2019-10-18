@@ -1,0 +1,2 @@
+set folder = "/var/spool/mail"
+set mbox = "+vagrant"
