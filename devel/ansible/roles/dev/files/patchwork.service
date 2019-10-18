@@ -3,9 +3,8 @@ Description=Patchwork
 After=network.target
 
 [Service]
-Environment="DJANGO_SETTINGS_MODULE=patchwork.settings.dev"
-Environment="PW_TEST_DB_TYPE=postgres"
-ExecStart=%h/.virtualenvs/pw/bin/python %h/patchwork/manage.py runserver 0.0.0.0:8000
+Environment="DJANGO_SETTINGS_MODULE=patchlab.settings.ci"
+ExecStart=%h/.virtualenvs/patchlab/bin/python %h/patchlab/manage.py runserver 0.0.0.0:8000
 Type=simple
 
 [Install]

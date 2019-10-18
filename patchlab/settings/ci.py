@@ -12,7 +12,7 @@ DATABASES = {
         "HOST": os.getenv("PW_TEST_DB_HOST", "localhost"),
         "PORT": os.getenv("PW_TEST_DB_PORT", ""),
         "USER": os.getenv("PW_TEST_DB_USER", "postgres"),
-        # 'PASSWORD': os.getenv('PW_TEST_DB_PASS', 'password'),
+        'PASSWORD': os.getenv('PW_TEST_DB_PASS', 'password'),
         "NAME": os.getenv("PW_TEST_DB_NAME", "patchwork"),
         "TEST": {"CHARSET": "utf8"},
     }

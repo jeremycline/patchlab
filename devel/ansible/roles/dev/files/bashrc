@@ -19,5 +19,5 @@ export VIRTUALENV_USE_DISTRIBUTE=true
 export PIP_RESPECT_VIRTUALENV=true
 source /usr/bin/virtualenvwrapper.sh
 
-export DJANGO_SETTINGS_MODULE=patchwork.settings.dev
+export DJANGO_SETTINGS_MODULE=patchlab.settings.ci
 export PW_TEST_DB_TYPE=postgres

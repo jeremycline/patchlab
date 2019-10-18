@@ -7,10 +7,12 @@
 - name: Install helpful development packages
   package: name={{ item }} state=present
   with_items:
+    - avahi
     - git
     - vim-enhanced
     - python3-virtualenvwrapper
     - mutt
+    - nss-mdns
 
 - name: Install system dependencies for Python packages
   package: name={{ item }} state=present
@@ -23,6 +25,12 @@
     - python3-devel
     - mariadb
     - mariadb-devel
+
+- name: Start avahi-daemon
+  systemd:
+    name: avahi-daemon
+    state: started
+    enabled: yes
 
 # Add various helpful configuration files
 - name: Install a custom bashrc
@@ -39,23 +47,22 @@
 - name: Create virtualenv
   become_user: "{{ ansible_env.SUDO_USER }}"
   shell: >
-      source ~/.bashrc && mkvirtualenv --python=python3 pw -a ~/patchwork
+      source ~/.bashrc && mkvirtualenv --python=python3 patchlab -a ~/patchlab
   args:
-    creates: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw
+    creates: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/patchlab
 
 - name: Install development requirements into the virtualenv
   become_user: "{{ ansible_env.SUDO_USER }}"
   pip:
-    requirements: "/home/{{ ansible_env.SUDO_USER }}/patchwork/requirements-dev.txt"
-    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    requirements: "/home/{{ ansible_env.SUDO_USER }}/patchlab/dev-requirements.txt"
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/patchlab/
     virtualenv_python: python3
 
 - name: Install Patchwork into the virtualenv
   become_user: "{{ ansible_env.SUDO_USER }}"
   pip:
-    name: "/home/{{ ansible_env.SUDO_USER }}/patchwork"
-    extra_args: "-e"
-    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    name: "git+https://github.com/jeremycline/patchwork.git#egg=patchwork"
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/patchlab/
     virtualenv_python: python3
 
 - name: Install patchlab into the virtualenv
@@ -63,20 +70,20 @@
   pip:
     name: "/home/{{ ansible_env.SUDO_USER }}/patchlab"
     extra_args: "-e"
-    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/patchlab/
     virtualenv_python: python3
 
 - name: Install Tox
   become_user: "{{ ansible_env.SUDO_USER }}"
   pip:
     name: tox
-    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/pw/
+    virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/patchlab/
     virtualenv_python: python3
 
 - name: Run the initial database migrations
   become_user: "{{ ansible_env.SUDO_USER }}"
   shell: >
-      source ~/.bashrc && workon pw && ./manage.py migrate && touch ~/.database_migrated
+      source ~/.bashrc && workon patchlab && ./manage.py migrate && touch ~/.database_migrated
   args:
     creates: /home/{{ ansible_env.SUDO_USER }}/.database_migrated
 

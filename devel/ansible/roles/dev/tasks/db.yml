@@ -30,6 +30,12 @@
 
 - replace:
     dest: /var/lib/pgsql/data/pg_hba.conf
+    regexp: "local   all             all                                     peer"
+    replace: "local   all             all                                     trust"
+  notify: restart postgres
+
+- replace:
+    dest: /var/lib/pgsql/data/pg_hba.conf
     regexp: "host    all             all             ::1/128                 ident"
     replace: "host    all             all             ::1/128                 trust"
   notify: restart postgres
