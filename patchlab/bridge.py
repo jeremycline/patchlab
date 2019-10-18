@@ -24,7 +24,7 @@ GITLAB_PROJECT_ID = 1
 PROJECT = "ark"
 
 session = requests.Session()
-gitlab = gitlab_module.Gitlab.from_config()
+gitlab = None
 
 
 # TODO configify repos
@@ -185,13 +185,16 @@ def pr_exists(project_id: int, branch_name: str) -> bool:
     try:
         project.branches.get(branch_name)
         _log.info("The %s branch already exists, skipping series")
-        return
+        return True
     except gitlab_module.exceptions.GitlabGetError as e:
         if e.response_code != 404:
             _log.error("Probing the GitLab project for %s failed (%r)", branch_name, e)
+        return False
 
 
 if __name__ == "__main__":
+    gitlab = gitlab_module.Gitlab.from_config()
+
     try:
         with open("last_event", "r") as f:
             since = f.read()
