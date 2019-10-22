@@ -4,7 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-ExecStart=/home/vagrant/.virtualenvs/pw/bin/celery worker --pool=prefork --concurrency=1 -E -A PatchLab -l info -n celery-worker%i@%H
+Environment="DJANGO_SETTINGS_MODULE=patchlab.settings.ci"
+ExecStart=/home/vagrant/.virtualenvs/patchlab/bin/celery worker --pool=prefork --concurrency=1 -E -A patchlab -l info -n celery-worker%i@%H
 
 [Install]
 WantedBy=multi-user.target
