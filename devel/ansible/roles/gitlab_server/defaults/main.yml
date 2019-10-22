@@ -7,7 +7,7 @@ packages:
   - pygpgme
   - yum-utils
 
-server_name: gitlab.example.com
+server_name: gitlab
 gitlab_sshd_port: 2222
 keyfile: "/etc/pki/tls/private/gitlab.key"
 certfile: "/etc/pki/tls/certs/gitlab.crt"
