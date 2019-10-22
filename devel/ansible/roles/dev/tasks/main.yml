@@ -62,7 +62,6 @@
   become_user: "{{ ansible_env.SUDO_USER }}"
   pip:
     name: "git+https://github.com/jeremycline/patchwork.git#egg=patchwork"
-    extra_args: "-e"
     virtualenv: /home/{{ ansible_env.SUDO_USER }}/.virtualenvs/patchlab/
     virtualenv_python: python3
 
