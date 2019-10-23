@@ -16,7 +16,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
  # If you would prefer to use NFS to share the directory uncomment this and configure NFS
  # config.vm.synced_folder ".", "/vagrant", type: "nfs", nfs_version: 4, nfs_udp: false
  config.vm.synced_folder ".", "/vagrant", disabled: true
- config.vm.synced_folder ".", "/home/vagrant/patchlab", type: "sshfs"
 
  # To cache update packages (which is helpful if frequently doing `vagrant destroy && vagrant up`)
  # you can create a local directory and share it to the guest's DNF cache. The directory needs to
@@ -32,6 +31,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
  config.vm.define "pw" do |pw|
     pw.vm.box = "fedora/30-cloud-base"
+    pw.vm.synced_folder ".", "/home/vagrant/patchlab", type: "sshfs"
 
     # Forward traffic on the host to the Django development server on the guest
     pw.vm.network "forwarded_port", guest: 8000, host: 8000
