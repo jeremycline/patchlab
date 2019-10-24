@@ -1,0 +1,16 @@
+---
+- hosts: localhost
+  vars:
+    postgresql_hba_entries:
+      - { type: local, database: all, user: all, auth_method: trust }
+      - { type: host, database: all, user: all, address: '127.0.0.1/32', auth_method: trust }
+      - { type: host, database: all, user: all, address: '::1/128', auth_method: trust }
+    postgresql_users:
+      - name: patchwork
+        password: password
+        role_attr_flags: SUPERUSER,CREATEROLE,CREATEDB
+    postgresql_databases:
+      - name: patchwork
+  roles:
+    - role: geerlingguy.postgresql
+      become: yes

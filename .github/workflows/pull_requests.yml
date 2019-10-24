@@ -43,6 +43,9 @@ jobs:
         python-version: 3.6
     - name: Install dependencies
       run: |
+        sudo apt-get install ansible
+        sudo ansible-galaxy install geerlingguy.postgresql
+        sudo ansible-playbook devel/ansible/ci-playbook.yml
         python -m pip install --upgrade pip
         pip install tox
     - name: Test with pytest
@@ -58,6 +61,9 @@ jobs:
         python-version: 3.7
     - name: Install dependencies
       run: |
+        sudo apt-get install ansible
+        sudo ansible-galaxy install geerlingguy.postgresql
+        sudo ansible-playbook devel/ansible/ci-playbook.yml
         python -m pip install --upgrade pip
         pip install tox
     - name: Test with pytest
