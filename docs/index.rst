@@ -3,18 +3,34 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to PatchLab's documentation!
-====================================
+========
+Patchlab
+========
 
+Patchlab is a Django application designed to be run with `Patchwork`_ in order
+to bridge the email development workflow with Gitlab project. Merge requests
+are converted to patches or patch series and patches emailed to the list result
+in merge requests.
+
+User Guide
+==========
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
+   installation
+   configuration
+   administration
+   changelog
 
 
-Indices and tables
-==================
+Developer Guide
+===============
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. toctree::
+   :maxdepth: 2
+
+   contributing
+
+
+.. _Patchwork: https://github.com/getpatchwork/patchwork

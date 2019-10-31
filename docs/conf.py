@@ -12,9 +12,14 @@
 import os
 import sys
 
+import django
+
 sys.path.insert(0, os.path.abspath("../"))  # NOQA
 
 import patchlab
+
+os.environ["DJANGO_SETTINGS_MODULE"] = "patchlab.settings.ci"
+django.setup()
 
 # -- Project information -----------------------------------------------------
 
@@ -60,4 +65,7 @@ html_theme = "alabaster"
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 
-intersphinx_mapping = {"python": ("https://docs.python.org/3", None)}
+intersphinx_mapping = {
+    "python": ("https://docs.python.org/3", None),
+    "patchwork": ("https://patchwork.readthedocs.io/en/latest/", None),
+}

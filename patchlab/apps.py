@@ -1,5 +1,9 @@
+import logging
+
 from django.apps import AppConfig
 from django.urls import include, path
+
+_log = logging.getLogger(__name__)
 
 
 class PatchlabConfig(AppConfig):
@@ -14,7 +18,16 @@ class PatchlabConfig(AppConfig):
     name = "patchlab"
 
     def ready(self):
-        from . import urls as our_urls
+        from django.conf import settings
         from patchwork import urls
 
+        from . import urls as our_urls
+
         urls.urlpatterns.append(path("patchlab/", include(our_urls.urlpatterns)))
+
+        # Make sure admins set a secret token
+        if settings.PATCHLAB_GITLAB_WEBHOOK_SECRET == "change this":
+            _log.error(
+                "Using the default GitLab web hook secret; this is not safe"
+                " for production deployments!"
+            )
