@@ -9,7 +9,6 @@
     state: present
   with_items:
     - avahi
-    - nss-mdns
 
 - name: Start avahi-daemon
   systemd:
