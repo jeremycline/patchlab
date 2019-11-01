@@ -8,6 +8,13 @@ class BridgedSubmission(models.Model):
     Information about Patchwork submissions we've bridged back and forth.
 
     This is necessary so that comments converted to email are properly threaded.
+
+    Attributes:
+        submission: A one-to-one relationship with a
+            :class:`patchwork.models.Submission`.
+        merge_request: The merge request ID in the Git forge.
+        commit: The commit hash of the bridged submission, if the submission in
+            question is a patch. May be null for comments.
     """
 
     submission = models.OneToOneField(
@@ -18,7 +25,19 @@ class BridgedSubmission(models.Model):
 
 
 class GitForge(models.Model):
-    """Represents a Git forge being bridged to and from email."""
+    """
+    Represents a Git forge being bridged to and from email.
+
+    Attributes:
+        project: A one-to-one relationship with a
+            :class:`patchwork.models.Project`.
+        host: The hostname of the Git forge; this is used for a uniqueness
+            constraint on it combined with the forge ID.
+        forge_id: The unique ID of the project in the Git forge. For Gitlab,
+            this is prominently displayed on the project home page.
+        subject_prefix: The subject prefix to prepend to patches being sent
+            to the list.
+    """
 
     project = models.OneToOneField(Project, on_delete=models.CASCADE, primary_key=True)
     host = models.CharField(max_length=255)

@@ -18,7 +18,8 @@ from django.urls import path
 
 from . import views
 
-urlpatterns = [
-    path("gitlab/merge_request/", views.gitlab.merge_request),
-    path("gitlab/comment/", views.gitlab.comment),
-]
+#: The endpoint for all Gitlab web hooks. The type of event is determined by
+#: a header. Each path is available underneath the parent ``patchlab/`` path.
+gitlab_webhook = path("gitlab/", views.gitlab.web_hook)
+
+urlpatterns = [gitlab_webhook]

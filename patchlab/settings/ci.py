@@ -18,5 +18,5 @@ DATABASES = {
     }
 }
 
-GITLAB_WEBHOOK_SECRET = "much secret, very wow"
+PATCHLAB_GITLAB_WEBHOOK_SECRET = "much secret, very wow"
 PATCHLAB_MAX_EMAILS = 25

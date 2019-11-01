@@ -22,7 +22,7 @@ def web_hook(request: http.HttpRequest) -> http.HttpResponse:
     except KeyError:
         return http.HttpResponseForbidden("Permission denied: missing web hook token")
 
-    if secret != settings.GITLAB_WEBHOOK_SECRET:
+    if secret != settings.PATCHLAB_GITLAB_WEBHOOK_SECRET:
         return http.HttpResponseForbidden("Permission denied: invalid web hook token")
 
     try:
@@ -71,5 +71,14 @@ def comment(payload: dict) -> http.HttpResponse:
     return http.HttpResponse("Success!")
 
 
-#: Maps the X-Gitlab-Event header value to handlers
+#: The set of web hook handlers that are currently supported.
+#: Consult `Gitlab webhooks`_ documentation for complete list of webhooks and
+#: the payload details.
+#:
+#: Merge Request Hook: This hook converts any merge-able merge request into
+#: an email series. It does not check for, say, a completed pipeline.
+#:
+#: Note Hook: Converts any comments on a merge request into an email response
+#:
+#: .. _Gitlab webhooks: https://docs.gitlab.com/ee/user/project/integrations/webhooks.html
 WEBHOOKS = {"Merge Request Hook": merge_request, "Note Hook": comment}
