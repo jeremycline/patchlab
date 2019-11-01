@@ -1,0 +1,16 @@
+[run]
+branch = True
+source =
+    patchlab
+
+[paths]
+source =
+   patchlab
+   .tox/*/site-packages/patchlab
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if __name__ == .__main__.:
+omit =
+    patchlab/tests/*

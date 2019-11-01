@@ -47,10 +47,14 @@ jobs:
         sudo ansible-galaxy install geerlingguy.postgresql
         sudo ansible-playbook devel/ansible/ci-playbook.yml
         python -m pip install --upgrade pip
-        pip install tox
+        pip install tox codecov
     - name: Test with pytest
       run: |
         tox -e py36
+    - name: Upload coverage results
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      run: codecov
   py37:
     runs-on: ubuntu-latest
     steps:
@@ -65,7 +69,11 @@ jobs:
         sudo ansible-galaxy install geerlingguy.postgresql
         sudo ansible-playbook devel/ansible/ci-playbook.yml
         python -m pip install --upgrade pip
-        pip install tox
+        pip install tox codecov
     - name: Test with pytest
       run: |
         tox -e py37
+    - name: Upload coverage results
+      env:
+        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+      run: codecov
