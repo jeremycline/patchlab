@@ -6,8 +6,11 @@ on:
       - master
 
 jobs:
-  lint:
+  style_checks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        tox_job: ["lint", "format", "licenses", "bandit", "docs"]
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python 3.7
@@ -18,29 +21,19 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install tox
-    - name: Lint with flake8
-      run: |
-        tox -e lint
-    - name: Format check with Black
-      run: |
-        tox -e format
-    - name: License check with liccheck
-      run: |
-        tox -e licenses
-    - name: Security check with Bandit
-      run: |
-        tox -e bandit
-    - name: Test documentation with sphinx
-      run: |
-        tox -e docs
-  py36:
+    - name: Checking ${{ matrix.tox_job }}
+      run: tox -e ${{ matrix.tox_job }}
+  unittests:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.6", "3.7"]
     steps:
     - uses: actions/checkout@v1
-    - name: Set up Python 3.6
+    - name: Set up Python
       uses: actions/setup-python@v1
       with:
-        python-version: 3.6
+        python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         sudo apt-get install ansible
@@ -49,30 +42,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox codecov
     - name: Test with pytest
-      run: |
-        tox -e py36
-    - name: Upload coverage results
-      env:
-        CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-      run: codecov
-  py37:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v1
-    - name: Set up Python 3.7
-      uses: actions/setup-python@v1
-      with:
-        python-version: 3.7
-    - name: Install dependencies
-      run: |
-        sudo apt-get install ansible
-        sudo ansible-galaxy install geerlingguy.postgresql
-        sudo ansible-playbook devel/ansible/ci-playbook.yml
-        python -m pip install --upgrade pip
-        pip install tox codecov
-    - name: Test with pytest
-      run: |
-        tox -e py37
+      run: tox -e py${{ matrix.python-version }}
     - name: Upload coverage results
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
