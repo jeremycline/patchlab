@@ -3,6 +3,8 @@ import os
 
 from patchwork.settings.dev import *  # noqa
 
+from .base import *  # noqa
+
 INSTALLED_APPS.append("patchlab")  # noqa
 
 # Alter the default database to Postgres.
@@ -17,6 +19,3 @@ DATABASES = {
         "TEST": {"CHARSET": "utf8"},
     }
 }
-
-PATCHLAB_GITLAB_WEBHOOK_SECRET = "much secret, very wow"
-PATCHLAB_MAX_EMAILS = 25

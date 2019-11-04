@@ -1,4 +1,6 @@
+black
 coverage
-pytest
+flake8
+pytest-django
 sphinx
 vcrpy
