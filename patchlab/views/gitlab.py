@@ -5,7 +5,7 @@ from django import http
 from django.conf import settings
 from django.views.decorators import csrf, http as http_decorators
 
-from patchlab.tasks import email_comment, email_merge_request
+from patchlab.tasks import email_comment, merge_request_hook
 
 
 @http_decorators.require_POST
@@ -49,7 +49,7 @@ def merge_request(payload: dict) -> http.HttpResponse:
     except KeyError:
         return http.HttpResponseBadRequest("Payload expected to have labels")
 
-    email_merge_request.apply_async((payload,))
+    merge_request_hook.apply_async((payload,))
     return http.HttpResponse("Success!")
 
 

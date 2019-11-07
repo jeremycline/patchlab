@@ -1,4 +1,4 @@
-from unittest import TestCase, mock
+from unittest import mock
 import os
 
 from django.test import override_settings, TestCase as DjangoTestCase
@@ -11,10 +11,17 @@ from ..tests import FIXTURES
 
 import urllib
 
-single_commit_email = """From: Jeremy Cline <jcline@redhat.com>
-Date: Wed, 23 Oct 2019 15:27:58 -0400
+single_commit_email = """Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH] Bring balance to the equals signs
+From: Patchwork <patchwork@patchwork.example.com>
+To: kernel@lists.fedoraproject.org
+Cc: Administrator <admin@example.com>
+Reply-To: kernel@lists.fedoraproject.org
+Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <4@localhost.localdomain>
+X-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/1
 X-Patchlab-Commit: a958a0dff5e3c433eb99bc5f18cbcfad77433b0d
 
@@ -40,21 +47,30 @@ index 669ac7c32292..a0cc9c082916 100644
 """
 
 multi_commit_emails = [
-    """From: Administrator <admin@example.com>
-Date: Thu, 24 Oct 2019 19:15:26 -0000
+    """Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 0/2] Update the README
+From: Patchwork <patchwork@patchwork.example.com>
+To: kernel@lists.fedoraproject.org
+Cc: Administrator <admin@example.com>
+Reply-To: kernel@lists.fedoraproject.org
+Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <1@localhost.localdomain>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-MIME-Version: 1.0
 
-Update the README to make me want to read it more.
-""",
-    """From: Jeremy Cline <jcline@redhat.com>
-Date: Wed, 23 Oct 2019 16:16:57 -0400
+Update the README to make me want to read it more.""",
+    """Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 1/2] Bring balance to the equals signs
+From: Patchwork <patchwork@patchwork.example.com>
+To: kernel@lists.fedoraproject.org
+Cc: Administrator <admin@example.com>
+Reply-To: kernel@lists.fedoraproject.org
+Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <2@localhost.localdomain>
+X-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
 X-Patchlab-Commit: 5c9b066a8bc9eed0e8d7ccd392bc8f77c42532f0
 
@@ -78,10 +94,17 @@ index 669ac7c32292..a0cc9c082916 100644
 2.22.0
 
 """,
-    """From: Jeremy Cline <jcline@redhat.com>
-Date: Wed, 23 Oct 2019 16:17:39 -0400
+    """Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 2/2] Convert the README to restructured text
+From: Patchwork <patchwork@patchwork.example.com>
+To: kernel@lists.fedoraproject.org
+Cc: Administrator <admin@example.com>
+Reply-To: kernel@lists.fedoraproject.org
+Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <4@localhost.localdomain>
+X-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
 X-Patchlab-Commit: c321c86ee75491f4bc0b0b0e368f71eff88fa91c
 
@@ -103,14 +126,17 @@ rename to README.rst
 """,
 ]
 
-big_email = """From: Administrator <admin@example.com>
-Date: Thu, 24 Oct 2019 19:15:26 -0000
+big_email = """Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 0/2] Update the README
+From: Patchwork <patchwork@patchwork.example.com>
+To: kernel@lists.fedoraproject.org
+Cc: Administrator <admin@example.com>
+Reply-To: kernel@lists.fedoraproject.org
+Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <4@localhost.localdomain>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
 
 Update the README to make me want to read it more.
 
@@ -133,7 +159,11 @@ It is also possible to review the merge request on GitLab at:
 """
 
 
-class PrepareEmailsTests(TestCase):
+@mock.patch(
+    "patchlab.tasks.email_utils.formatdate",
+    mock.Mock(return_value="Mon, 04 Nov 2019 23:00:00 -0000"),
+)
+class PrepareEmailsTests(DjangoTestCase):
     """
     Tests for the _prepare_emails function.
 
@@ -150,6 +180,19 @@ class PrepareEmailsTests(TestCase):
         self.vcr.__enter__()
         self.addCleanup(self.vcr.__exit__, None, None, None)
 
+        self.project = pw_models.Project(
+            linkname="ark",
+            name="ARK",
+            listid="kernel.lists.fedoraproject.org",
+            listemail="kernel@lists.fedoraproject.org",
+        )
+        self.forge = models.GitForge(
+            project=self.project,
+            host="gitlab.example.com",
+            forge_id=1,
+            subject_prefix="TEST PATCH",
+        )
+
     @mock.patch("patchlab.tasks.email_utils.make_msgid")
     def test_single_commit_mr(self, mock_make_msgid):
         """
@@ -162,10 +205,30 @@ class PrepareEmailsTests(TestCase):
         project = gitlab.projects.get(1)
         merge_request = project.mergerequests.get(1)
 
-        emails = tasks._prepare_emails(gitlab, project, merge_request, "TEST PATCH")
+        emails = tasks._prepare_emails(gitlab, self.forge, project, merge_request)
 
         self.assertEqual(1, len(emails))
-        self.assertEqual(single_commit_email, emails[0].as_string())
+        self.assertEqual(single_commit_email, emails[0].message().as_string())
+
+    @mock.patch("patchlab.tasks.email_utils.make_msgid")
+    def test_no_patch_prefix(self, mock_make_msgid):
+        """
+        Assert if gitlab starts generating patches without [PATCH] we don't
+        mangle the subject. The recorded web response has been edited to remove
+        the subject prefix.
+        """
+
+        mock_make_msgid.return_value = "<4@localhost.localdomain>"
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(1)
+
+        emails = tasks._prepare_emails(gitlab, self.forge, project, merge_request)
+
+        self.assertEqual(1, len(emails))
+        self.assertEqual(single_commit_email, emails[0].message().as_string())
 
     @mock.patch("patchlab.tasks.email_utils.formatdate")
     @mock.patch("patchlab.tasks.email_utils.make_msgid")
@@ -186,11 +249,11 @@ class PrepareEmailsTests(TestCase):
         project = gitlab.projects.get(1)
         merge_request = project.mergerequests.get(2)
 
-        emails = tasks._prepare_emails(gitlab, project, merge_request, "TEST PATCH")
+        emails = tasks._prepare_emails(gitlab, self.forge, project, merge_request)
 
         self.assertEqual(3, len(emails))
         for email, expected_email in zip(emails, multi_commit_emails):
-            self.assertEqual(expected_email, email.as_string())
+            self.assertEqual(expected_email, email.message().as_string())
 
     @override_settings(PATCHLAB_MAX_EMAILS=1)
     @mock.patch("patchlab.tasks.email_utils.formatdate")
@@ -205,12 +268,16 @@ class PrepareEmailsTests(TestCase):
         project = gitlab.projects.get(1)
         merge_request = project.mergerequests.get(2)
 
-        emails = tasks._prepare_emails(gitlab, project, merge_request, "TEST PATCH")
+        emails = tasks._prepare_emails(gitlab, self.forge, project, merge_request)
 
         self.assertEqual(1, len(emails))
-        self.assertEqual(big_email, emails[0].as_string())
+        self.assertEqual(big_email, emails[0].message().as_string())
 
 
+@mock.patch(
+    "patchlab.tasks.email_utils.formatdate",
+    mock.Mock(return_value="Mon, 04 Nov 2019 23:00:00 -0000"),
+)
 class RecordBridgingTests(DjangoTestCase):
     """Tests for :func:`patchlab.tasks._record_bridging`."""
 
@@ -245,9 +312,9 @@ class RecordBridgingTests(DjangoTestCase):
         )
         project = gitlab.projects.get(1)
         merge_request = project.mergerequests.get(2)
-        emails = tasks._prepare_emails(gitlab, project, merge_request, "TEST PATCH")
+        emails = tasks._prepare_emails(gitlab, forge, project, merge_request)
 
-        tasks._record_bridging(forge, 1, emails)
+        tasks._record_bridging(forge.project.listid, 1, emails)
 
         self.assertEqual(3, models.BridgedSubmission.objects.count())
         self.assertEqual(2, pw_models.Patch.objects.count())
@@ -274,9 +341,38 @@ class RecordBridgingTests(DjangoTestCase):
         )
         project = gitlab.projects.get(1)
         merge_request = project.mergerequests.get(1)
-        emails = tasks._prepare_emails(gitlab, project, merge_request, "TEST PATCH")
+        emails = tasks._prepare_emails(gitlab, forge, project, merge_request)
 
-        tasks._record_bridging(forge, 1, emails)
+        tasks._record_bridging(forge.project.listid, 1, emails)
 
         self.assertEqual(1, models.BridgedSubmission.objects.count())
         self.assertEqual(1, pw_models.Patch.objects.count())
+
+    def test_duplicate_patches(self):
+        """Assert if the same emails are provided to _record_bridging it raises an exception."""
+        project = pw_models.Project(
+            linkname="ark",
+            name="ARK",
+            listid="kernel.lists.fedoraproject.org",
+            listemail="kernel@lists.fedoraproject.org",
+        )
+        project.save()
+        pw_models.State(ordering=0, name="test").save()
+        forge = models.GitForge(
+            project=project,
+            host="gitlab.example.com",
+            forge_id=1,
+            subject_prefix="ARK INTERNAL PATCH",
+        )
+        forge.save()
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(1)
+        emails = tasks._prepare_emails(gitlab, forge, project, merge_request)
+
+        tasks._record_bridging(forge.project.listid, 1, emails)
+        self.assertRaises(
+            ValueError, tasks._record_bridging, forge.project.listid, 1, emails
+        )

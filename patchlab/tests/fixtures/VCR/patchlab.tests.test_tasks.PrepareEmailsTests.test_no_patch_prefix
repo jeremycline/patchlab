@@ -1,0 +1,298 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - iaxMadvFyRCFRFH1CkW6
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1
+  response:
+    body:
+      string: '{"id":1,"description":"","name":"kernel","name_with_namespace":"Administrator
+        / kernel","path":"kernel","path_with_namespace":"root/kernel","created_at":"2019-10-22T20:44:11.407Z","default_branch":"internal","tag_list":[],"ssh_url_to_repo":"ssh://git@gitlab:2222/root/kernel.git","http_url_to_repo":"https://gitlab/root/kernel.git","web_url":"https://gitlab/root/kernel","readme_url":"https://gitlab/root/kernel/blob/internal/README","avatar_url":null,"star_count":0,"forks_count":0,"last_activity_at":"2019-10-23T19:45:11.370Z","namespace":{"id":1,"name":"Administrator","path":"root","kind":"user","full_path":"root","parent_id":null,"avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"_links":{"self":"https://gitlab/api/v4/projects/1","issues":"https://gitlab/api/v4/projects/1/issues","merge_requests":"https://gitlab/api/v4/projects/1/merge_requests","repo_branches":"https://gitlab/api/v4/projects/1/repository/branches","labels":"https://gitlab/api/v4/projects/1/labels","events":"https://gitlab/api/v4/projects/1/events","members":"https://gitlab/api/v4/projects/1/members"},"empty_repo":false,"archived":false,"visibility":"public","owner":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"resolve_outdated_diff_discussions":false,"container_registry_enabled":true,"issues_enabled":true,"merge_requests_enabled":true,"wiki_enabled":true,"jobs_enabled":true,"snippets_enabled":true,"issues_access_level":"enabled","repository_access_level":"enabled","merge_requests_access_level":"enabled","wiki_access_level":"enabled","builds_access_level":"enabled","snippets_access_level":"enabled","shared_runners_enabled":true,"lfs_enabled":true,"creator_id":1,"import_status":"none","import_error":null,"open_issues_count":0,"runners_token":"KhaXkt1p4u-Q_F5so_Zx","ci_default_git_depth":50,"public_jobs":true,"build_git_strategy":"fetch","build_timeout":3600,"auto_cancel_pending_pipelines":"enabled","build_coverage_regex":null,"ci_config_path":null,"shared_with_groups":[],"only_allow_merge_if_pipeline_succeeds":false,"request_access_enabled":true,"only_allow_merge_if_all_discussions_are_resolved":false,"printing_merge_request_link_enabled":true,"merge_method":"merge","auto_devops_enabled":true,"auto_devops_deploy_strategy":"continuous","permissions":{"project_access":{"access_level":40,"notification_level":3},"group_access":null}}'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2581'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Oct 2019 20:04:24 GMT
+      Etag:
+      - W/"c31a9b46130f85cf566597593da2a805"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - Y275AAHZjD1
+      X-Runtime:
+      - '0.279525'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - iaxMadvFyRCFRFH1CkW6
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1/merge_requests/1
+  response:
+    body:
+      string: '{"id":1,"iid":1,"project_id":1,"title":"Bring balance to the equals
+        signs","description":"This is a silly change so I can write a test.\n\nSigned-off-by:
+        Jeremy Cline \u003cjcline@redhat.com\u003e","state":"opened","created_at":"2019-10-23T19:45:43.879Z","updated_at":"2019-10-23T19:45:43.879Z","merged_by":null,"merged_at":null,"closed_by":null,"closed_at":null,"target_branch":"internal","source_branch":"single_commit","user_notes_count":0,"upvotes":0,"downvotes":0,"assignee":null,"author":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"assignees":[],"source_project_id":1,"target_project_id":1,"labels":[],"work_in_progress":false,"milestone":null,"merge_when_pipeline_succeeds":false,"merge_status":"can_be_merged","sha":"a958a0dff5e3c433eb99bc5f18cbcfad77433b0d","merge_commit_sha":null,"discussion_locked":null,"should_remove_source_branch":null,"force_remove_source_branch":false,"reference":"!1","web_url":"https://gitlab/root/kernel/merge_requests/1","time_stats":{"time_estimate":0,"total_time_spent":0,"human_time_estimate":null,"human_total_time_spent":null},"squash":false,"task_completion_status":{"count":0,"completed_count":0},"subscribed":true,"changes_count":"1","latest_build_started_at":null,"latest_build_finished_at":null,"first_deployed_to_production_at":null,"pipeline":null,"head_pipeline":{"id":2,"sha":"a958a0dff5e3c433eb99bc5f18cbcfad77433b0d","ref":"single_commit","status":"pending","created_at":"2019-10-23T19:45:11.946Z","updated_at":"2019-10-23T19:45:12.349Z","web_url":"https://gitlab/root/kernel/pipelines/2","before_sha":"0000000000000000000000000000000000000000","tag":false,"yaml_errors":null,"user":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"started_at":null,"finished_at":null,"committed_at":null,"duration":null,"coverage":null,"detailed_status":{"icon":"status_pending","text":"pending","label":"pending","group":"pending","tooltip":"pending","has_details":true,"details_path":"/root/kernel/pipelines/2","illustration":null,"favicon":"/assets/ci_favicons/favicon_status_pending-5bdf338420e5221ca24353b6bff1c9367189588750632e9a871b7af09ff6a2ae.png"}},"diff_refs":{"base_sha":"8fb1cd58d45e5ab5ab79d9fd5fd7b2d6e56faab2","head_sha":"a958a0dff5e3c433eb99bc5f18cbcfad77433b0d","start_sha":"8fb1cd58d45e5ab5ab79d9fd5fd7b2d6e56faab2"},"merge_error":null,"user":{"can_merge":true}}'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2636'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Oct 2019 20:04:24 GMT
+      Etag:
+      - W/"240079aedcbea947858b160d4ddaf674"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - dYKTqTx0nE3
+      X-Runtime:
+      - '0.117281'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - iaxMadvFyRCFRFH1CkW6
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: https://gitlab/api/v4/users/1
+  response:
+    body:
+      string: '{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root","created_at":"2019-10-22T20:39:11.411Z","bio":null,"location":null,"public_email":"","skype":"","linkedin":"","twitter":"","website_url":"","organization":null,"last_sign_in_at":"2019-10-22T20:43:53.176Z","confirmed_at":"2019-10-22T20:39:11.077Z","last_activity_on":"2019-10-23","email":"admin@example.com","theme_id":1,"color_scheme_id":1,"projects_limit":100000,"current_sign_in_at":"2019-10-22T20:43:53.176Z","identities":[],"can_create_group":true,"can_create_project":true,"two_factor_enabled":false,"external":false,"private_profile":false,"is_admin":true,"highest_role":40}'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '783'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Oct 2019 20:04:24 GMT
+      Etag:
+      - W/"5fe65894b498b2e21f9b2d6adef4d05c"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - 2kYU0ZLAPP8
+      X-Runtime:
+      - '0.027008'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - iaxMadvFyRCFRFH1CkW6
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1/merge_requests/1/commits
+  response:
+    body:
+      string: '[{"id":"a958a0dff5e3c433eb99bc5f18cbcfad77433b0d","short_id":"a958a0df","created_at":"2019-10-23T19:29:15.000Z","parent_ids":[],"title":"Bring
+        balance to the equals signs","message":"Bring balance to the equals signs\n\nThis
+        is a silly change so I can write a test.\n\nSigned-off-by: Jeremy Cline \u003cjcline@redhat.com\u003e\n","author_name":"Jeremy
+        Cline","author_email":"jcline@redhat.com","authored_date":"2019-10-23T19:27:58.000Z","committer_name":"Jeremy
+        Cline","committer_email":"jcline@redhat.com","committed_date":"2019-10-23T19:29:15.000Z"}]'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '552'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 23 Oct 2019 20:04:24 GMT
+      Etag:
+      - W/"2e588c2473935869766d4a2d7c92ec40"
+      Link:
+      - <https://gitlab/api/v4/projects/1/merge_requests/1/commits?id=1&merge_request_iid=1&page=1&per_page=>;
+        rel="first", <https://gitlab/api/v4/projects/1/merge_requests/1/commits?id=1&merge_request_iid=1&page=1&per_page=>;
+        rel="last"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Next-Page:
+      - ''
+      X-Page:
+      - '1'
+      X-Per-Page:
+      - '20'
+      X-Prev-Page:
+      - ''
+      X-Request-Id:
+      - MFwG41e0Sf4
+      X-Runtime:
+      - '0.033745'
+      X-Total:
+      - '1'
+      X-Total-Pages:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.22.0
+    method: GET
+    uri: https://gitlab/root/kernel/commit/a958a0dff5e3c433eb99bc5f18cbcfad77433b0d.patch
+  response:
+    body:
+      string: "From a958a0dff5e3c433eb99bc5f18cbcfad77433b0d Mon Sep 17 00:00:00 2001\n\
+        From: Jeremy Cline <jcline@redhat.com>\nDate: Wed, 23 Oct 2019 15:27:58 -0400\n\
+        Subject: Bring balance to the equals signs\n\nThis is a silly change\
+        \ so I can write a test.\n\nSigned-off-by: Jeremy Cline <jcline@redhat.com>\n\
+        ---\n README | 1 +\n 1 file changed, 1 insertion(+)\n\ndiff --git a/README\
+        \ b/README\nindex 669ac7c32292..a0cc9c082916 100644\n--- a/README\n+++ b/README\n\
+        @@ -1,3 +1,4 @@\n+============\n Linux kernel\n ============\n \n-- \n2.22.0\n\
+        \n"
+    headers:
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Disposition:
+      - inline
+      Content-Length:
+      - '513'
+      Content-Type:
+      - text/plain
+      Date:
+      - Wed, 23 Oct 2019 20:04:24 GMT
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - experimentation_subject_id=IjU4NWU1ZTJjLTRhYTAtNDA5ZS1iNjQ2LTZjZjczOTY1Nzg3MSI%3D--1adffe415d36e8c3a3907dc98ac24adbac019ab5;
+        path=/; expires=Sun, 23 Oct 2039 20:04:24 -0000; secure
+      Strict-Transport-Security:
+      - max-age=31536000
+      X-Content-Type-Options:
+      - nosniff
+      X-Download-Options:
+      - noopen
+      X-Frame-Options:
+      - DENY
+      X-Permitted-Cross-Domain-Policies:
+      - none
+      X-Request-Id:
+      - 79D0xw9sOr5
+      X-Runtime:
+      - '0.055412'
+      X-Ua-Compatible:
+      - IE=edge
+      X-Xss-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

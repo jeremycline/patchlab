@@ -1,5 +1,5 @@
 """
-Settings used by Patchlab.
+Django settings specific to Patchlab.
 
 Patchlab is intended to be run as an extension to Patchwork, so you should
 start with a valid `patchwork configuration`_ and include the settings
@@ -10,7 +10,11 @@ documented here in that file.
     the starting point, adding ``INSTALLED_APPS.append("patchlab")`` to the
     end of the file is enough.
 
+Patchlab uses Django's builtin email framework so be sure include email related
+`Django settings`_.
+
 .. _patchwork configuration: https://patchwork.readthedocs.io/en/latest/deployment/configuration/
+.. _Django settings: https://docs.djangoproject.com/en/stable/ref/settings/
 """
 
 #: The secret token GitLab is configured to send with the web hook. Patchlab
