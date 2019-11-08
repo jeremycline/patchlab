@@ -22,6 +22,7 @@ class PatchlabConfig(AppConfig):
         from patchwork import urls
 
         from . import urls as our_urls
+        from . import events  # noqa: F401
 
         urls.urlpatterns.append(path("patchlab/", include(our_urls.urlpatterns)))
 

@@ -9,18 +9,39 @@ git-am, pushes them to a GitLab repository, and opens a pull request.
 
 from typing import Optional, Sequence
 import logging
-import os
 import subprocess
 
-from patchwork.models import Project
+from django.core.mail import EmailMessage
+from patchwork.models import Project, Series
+from patchwork.views.utils import series_to_mbox
+import backoff
 import gitlab as gitlab_module
 import requests
+
+from .models import BridgedSubmission
 
 
 _log = logging.Logger(__name__)
 
 session = requests.Session()
 gitlab = None
+
+
+GIT_AM_FAILURE = """
+Hello,
+
+We were unable to apply this patch series to the current development branch.
+The current head of the {branch_name} branch is commit {commit}.
+
+Please rebase this series against the current development branch and resend it
+or, if you prefer never seeing this email again, submit your series as a pull
+request:
+
+  1. Create an account and fork {url}.
+  2. git remote add <remote-name> <your-forked-repo>
+  3. git push <remote-name> <branch-name> --push-option=merge_request.create \\
+       --push-option=merge_request.title="{title}"
+"""
 
 
 def poll_events(api_url: str, project: str, since: Optional[str]) -> Sequence[dict]:
@@ -68,8 +89,23 @@ def _link(response: requests.Response, ref: str = "next") -> Optional[str]:
         return
 
 
+class Retry(Exception):
+    """Raised in a helper method if a step needs retrying due to missing resources"""
+
+    pass
+
+
+@backoff.on_exception(
+    backoff.expo,
+    (
+        gitlab_module.exceptions.GitlabConnectionError,
+        requests.exceptions.ConnectionError,
+        Retry,
+    ),
+    logger=__name__,
+)
 def open_merge_request(
-    patchwork_project: Project, title: str, branch_name: str, mbox: str
+    gitlab: gitlab_module.Gitlab, patchwork_project: Project, series_id: int
 ) -> None:
     """
     Convert a Patchwork series into a pull request in GitLab.
@@ -90,113 +126,165 @@ def open_merge_request(
             the patchwork API.
 
     Raises:
-        requests.RequestException: If the patch series cannot be retrieved
-            from Patchwork.
+        django.db.OperationalError: If the database connection is unavailable.
+            The connection should be restarted before retrying this function.
+        gitlab_module.exceptions.GitlabError: If a GitLab API call fails in an unrecoverable
+            or un-handled manner.
+        subprocess.TimeoutExpired: If a subprocess call exceeds its timeout.
+        subprocess.CalledProcessError: If a subprocess call fails in an unrecoverable manner.
     """
-    git_forge = patchwork_project.git_forge
-
-    # TODO this should be pulled out into proper initialization code or something.
-    if not os.path.exists(git_forge.repo_path):
-        try:
-            subprocess.run(
-                ["git", "clone", patchwork_project.scm_url, git_forge.repo_path],
-                check=True,
-                timeout=60 * 60,
-            )
-        except subprocess.TimeoutExpired:
-            raise
-        except subprocess.CalledProcessError:
-            raise
-
-    # TODO: Fails if the repo path doesn't exist, the remote doesn't exist, the
-    # branch doesn't exist, git isn't installed. All need to halt operation
-    # and presented to the user.
+    branch_name = f"emails/series-{series_id}"
     try:
-        subprocess.run(
-            [
-                "git",
-                "-C",
-                git_forge.repo_path,
-                "reset",
-                "--hard",
-                f"origin/{git_forge.development_branch}",
-            ],
-            check=True,
-        )
-        subprocess.run(
-            [
-                "git",
-                "-C",
-                git_forge.repo_path,
-                "checkout",
-                git_forge.development_branch,
-            ],
-            check=True,
-        )
-    except subprocess.CalledProcessError:
-        # TODO Failure here indicates a configuration error. Don't retry.
-        raise
-
-    # TODO: This could fail if the network is borked. We want to retry if this fails.
-    try:
-        subprocess.run(
-            ["git", "-C", git_forge.repo_path, "pull"], timeout=60, check=True
-        )
-    except subprocess.TimeoutExpired:
-        raise
-    except subprocess.CalledProcessError:
-        raise
-
-    try:
-        subprocess.run(
-            ["git", "-C", git_forge.repo_path, "branch", "-D", branch_name], check=False
-        )
-        subprocess.run(
-            ["git", "-C", git_forge.repo_path, "checkout", "-b", branch_name],
-            check=True,
-        )
-    except subprocess.CalledProcessError:
-        # TODO when can checkout fail?
-        raise
-
-    try:
-        subprocess.run(
-            ["git", "-C", git_forge.repo_path, "am"], input=mbox, text=True, check=True
-        )
-    except subprocess.CalledProcessError:
-        # TODO git-am exited non-zero, complain to the developer with actionable info.
-        raise
-
-    try:
-        subprocess.run(
-            [
-                "git",
-                "-C",
-                git_forge.repo_path,
-                "push",
-                "--push-option=merge_request.create",
-                "--push-option=merge_request.remove_source_branch",
-                f'--push-option=merge_request.title="{title}"',
-                '--push-option=merge_request.label="From email"',
-                "-f",
-                "origin",
-                branch_name,
-            ],
-            check=True,
-        )
-    except subprocess.CalledProcessError:
-        # TODO This could fail because the network is borked or we don't have write
-        # access to the remote.
-        raise
-
-
-def pr_exists(gitlab: gitlab_module.Gitlab, project_id: int, branch_name: str) -> bool:
-    project = gitlab.projects.get(project_id)
-    try:
-        project.branches.get(branch_name)
-        _log.info("The %s branch already exists, skipping series")
-        return True
+        gitlab_project = gitlab.projects.get(patchwork_project.git_forge.forge_id)
     except gitlab_module.exceptions.GitlabGetError as e:
-        if e.response_code != 404:
-            _log.error("Probing the GitLab project for %s failed (%r)", branch_name, e)
-        return False
+        if e.response_code >= 500:
+            raise Retry(str(e))
+        else:
+            _log.error("Fatal error requesting %r: %r", patchwork_project.git_forge, e)
+            raise
+
+    if gitlab_project.mergerequests.list(source_branch=branch_name, state="all"):
+        _log.info(
+            "A merge request for branch %s already exists, skipping series", branch_name
+        )
+        return
+
+    series = Series.objects.get(pk=series_id)
+
+    _reset_tree(patchwork_project.git_forge)
+
+    try:
+        _create_branch(patchwork_project, series, branch_name)
+    except ValueError:
+        return
+
+    if series.cover_letter:
+        description = series.cover_letter.content
+    else:
+        description = series.patches.order_by("number").first().content
+
+    merge_request = gitlab_project.mergerequests.create(
+        {
+            "source_branch": branch_name,
+            "target_branch": patchwork_project.git_forge.development_branch,
+            "title": series.name,
+            "labels": ["From email"],
+            "remove_source_branch": True,
+            "allow_collaboration": True,
+            "description": f"```\n{description}\n```",  # Email formatting + Markdown looks bad
+        }
+    )
+
+    if series.cover_letter:
+        BridgedSubmission(
+            submission=series.cover_letter.submission_ptr,
+            merge_request=merge_request.id,
+        ).save()
+
+    for patch, commit in zip(
+        series.patches.order_by("number").all(), merge_request.commits()
+    ):
+        bridged_submission = BridgedSubmission(
+            submission=patch.submission_ptr,
+            merge_request=merge_request.id,
+            commit=commit.id,
+        )
+        bridged_submission.save()
+
+
+def _reset_tree(git_forge):
+    """Reset a git tree to the latest upstream commit on the development branch."""
+    subprocess.run(
+        ["git", "-C", git_forge.repo_path, "fetch", "origin"], timeout=300, check=True
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            git_forge.repo_path,
+            "reset",
+            "--hard",
+            f"origin/{git_forge.development_branch}",
+        ],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", git_forge.repo_path, "am", "--abort"], check=False,
+    )
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            git_forge.repo_path,
+            "checkout",
+            f"origin/{git_forge.development_branch}",
+        ],
+        check=True,
+    )
+
+
+@backoff.on_exception(
+    backoff.expo,
+    (subprocess.CalledProcessError, subprocess.TimeoutExpired),
+    logger=__name__,
+)
+def _create_branch(patchwork_project, series, branch_name):
+    """Create a branch on the remote from a series."""
+    git_forge = patchwork_project.git_forge
+    subprocess.run(
+        ["git", "-C", git_forge.repo_path, "branch", "-D", branch_name], check=False
+    )
+    subprocess.run(
+        ["git", "-C", git_forge.repo_path, "checkout", "-b", branch_name], check=True
+    )
+    try:
+        subprocess.run(
+            ["git", "-C", git_forge.repo_path, "am"],
+            input=series_to_mbox(series),
+            text=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError:
+        _notify_am_failure(patchwork_project, series)
+        raise ValueError("Series cannot be applied")
+
+    subprocess.run(
+        ["git", "-C", git_forge.repo_path, "push", "-f", "origin", branch_name],
+        check=True,
+        timeout=60,
+    )
+
+
+def _notify_am_failure(patchwork_project: Project, series: Series) -> None:
+    """Notify a developer that the series could not be applied to a project."""
+    commit = subprocess.run(
+        [
+            "git",
+            "-C",
+            patchwork_project.git_forge.repo_path,
+            "rev-parse",
+            f"origin/{patchwork_project.git_forge.development_branch}",
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    if series.cover_letter:
+        msgid = series.cover_letter.msgid
+    else:
+        msgid = series.patches.first().msgid
+
+    body = GIT_AM_FAILURE.format(
+        branch_name=patchwork_project.git_forge.development_branch,
+        commit=commit.stdout,
+        url=patchwork_project.web_url,
+        title=series.name,
+    )
+    mail = EmailMessage(
+        subject=f"Re: {series.name}",
+        body=body,
+        headers={"In-Reply-To": f"{msgid}"},
+        to=[series.submitter.email],
+    )
+    mail.send()

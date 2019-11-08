@@ -4,6 +4,7 @@ import os
 from patchwork.settings.dev import *  # noqa
 
 from .base import *  # noqa
+from ..tests import FIXTURES
 
 INSTALLED_APPS.append("patchlab")  # noqa
 
@@ -19,3 +20,5 @@ DATABASES = {
         "TEST": {"CHARSET": "utf8"},
     }
 }
+
+FIXTURES_DIR = os.path.join(FIXTURES, "db")

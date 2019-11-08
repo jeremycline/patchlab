@@ -40,6 +40,8 @@ class GitForge(models.Model):
             this is prominently displayed on the project home page.
         subject_prefix: The subject prefix to prepend to patches being sent
             to the list.
+        development_branch: The branch in the Git forge used for development;
+            this is the branch pull requests are opened against.
     """
 
     project = models.OneToOneField(
