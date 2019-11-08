@@ -1,3 +1,6 @@
+import os
+
+from django.conf import settings
 from django.db import models
 
 from patchwork.models import Project, Submission
@@ -39,10 +42,13 @@ class GitForge(models.Model):
             to the list.
     """
 
-    project = models.OneToOneField(Project, on_delete=models.CASCADE, primary_key=True)
+    project = models.OneToOneField(
+        Project, on_delete=models.CASCADE, related_name="git_forge", primary_key=True
+    )
     host = models.CharField(max_length=255)
     forge_id = models.IntegerField()
     subject_prefix = models.CharField(max_length=64)
+    development_branch = models.CharField(max_length=255, default="master")
 
     class Meta:
         unique_together = [["host", "forge_id"]]
@@ -59,3 +65,7 @@ class GitForge(models.Model):
             f"subject_prefix={self.subject_prefix}, "
             f"project={repr(self.project)})"
         )
+
+    @property
+    def repo_path(self):
+        return os.path.join(settings.PATCHLAB_REPO_DIR, f"{self.host}-{self.forge_id}")

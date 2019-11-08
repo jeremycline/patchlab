@@ -28,3 +28,7 @@ PATCHLAB_GITLAB_WEBHOOK_SECRET = "change this"
 #: request exceed this number, an email with instructions on how to pull the
 #: git branch for local review is sent instead of the series.
 PATCHLAB_MAX_EMAILS = 25
+
+#: The directory to store Git trees in. The scheme inside this directory is
+#: <forge-host>-<forge-id>.
+PATCHLAB_REPO_DIR = "/var/lib/patchlab"

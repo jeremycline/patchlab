@@ -12,6 +12,20 @@ Django
 .. automodule:: patchlab.settings.base
 .. autodata:: patchlab.settings.base.PATCHLAB_GITLAB_WEBHOOK_SECRET
 .. autodata:: patchlab.settings.base.PATCHLAB_MAX_EMAILS
+.. autodata:: patchlab.settings.base.PATCHLAB_REPO_DIR
+
+
+Git
+===
+
+Patchlab makes use of the ``git`` command line to apply patches and open
+merge requests on GitLab. As such, the user that runs the ``email2gitlab``
+service needs a valid git configuration that contains at least a user and
+email::
+
+    [user]
+    email = you@example.com
+    name = Your Name
 
 
 Gitlab
