@@ -41,8 +41,22 @@
   become_user: "{{ ansible_env.SUDO_USER }}"
   copy: src=muttrc dest=/home/{{ ansible_env.SUDO_USER }}/.muttrc
 
+- name: Install a gitconfig
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  copy: src=gitconfig dest=/home/{{ ansible_env.SUDO_USER }}/.gitconfig
+
 - name: Install the message of the day
   copy: src=motd dest=/etc/motd
+
+- name: Create python-gitlab config
+  copy:
+    src: python-gitlab.cfg
+    dest: /etc/python-gitlab.cfg
+    mode: 0644
+
+- git:
+    repo: https://github.com/jeremycline/patchwork.git
+    dest: "/home/{{ ansible_env.SUDO_USER }}/patchwork"
 
 - name: Create virtualenv
   become_user: "{{ ansible_env.SUDO_USER }}"
@@ -87,6 +101,15 @@
   args:
     creates: /home/{{ ansible_env.SUDO_USER }}/.database_migrated
 
+- name: Load fixture data for default admin user and test project
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  shell: >
+      source ~/.bashrc && workon patchlab && \
+      ./manage.py loaddata patchlab/tests/fixtures/db/initial_db.json && \
+      touch ~/.fixtures_loaded
+  args:
+    creates: /home/{{ ansible_env.SUDO_USER }}/.fixtures_loaded
+
 - name: Create user systemd directory
   become_user: "{{ ansible_env.SUDO_USER }}"
   file:
@@ -122,3 +145,18 @@
   with_items:
     - "1"
     - "2"
+
+- name: Create patchlab repo directory
+  file:
+    path: /var/lib/patchlab
+    state: directory
+    owner: vagrant
+    group: vagrant
+
+- name: Clone test repo
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  git:
+    repo: https://oauth2:xTzqx9yQzAJtaj-sG8yJ@gitlab/root/patchlab_test.git
+    dest: /var/lib/patchlab/gitlab-1
+  environment:
+    GIT_SSL_NO_VERIFY: "false"

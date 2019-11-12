@@ -1,0 +1,5 @@
+[user]
+	email = vagrant@pw.example.com
+	name = Vagrant
+[http]
+	sslVerify = false

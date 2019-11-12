@@ -26,7 +26,7 @@
 
 - name: install gitlab-ce
   yum:
-    name: gitlab-ce
+    name: gitlab-ce-12.4.2
     state: present
 
 - name: add server name to config
@@ -63,7 +63,46 @@
       gitlab_rails['smtp_ssl'] = false
       gitlab_rails['smtp_force_ssl'] = false
       letsencrypt['enable'] = false
-  notify: reconfigure gitlab
+
+- name: reconfigure gitlab
+  command: gitlab-ctl reconfigure
+
+- name: Stop gitlab unicorn
+  command: gitlab-ctl stop unicorn
+
+- name: Stop gitlab sidekiq
+  command: gitlab-ctl stop sidekiq
+
+- name: Ensure backup directory exists
+  file:
+    path: "/var/opt/gitlab/backups/"
+    state: directory
+    owner: git
+    group: git
+
+- name: Copy fixture backup
+  copy:
+    src: gitlab_backup.tar
+    dest: /var/opt/gitlab/backups/default_gitlab_backup.tar
+    owner: git
+    group: git
+
+- name: Copy fixture secrets
+  copy:
+    src: gitlab-secrets.json
+    dest: /etc/gitlab/gitlab-secrets.json
+    owner: root
+    group: root
+    mode: 0600
+
+- name: Restore from backup
+  shell: yes yes | gitlab-backup restore BACKUP=default
+
+- name: reconfigure gitlab
+  command: gitlab-ctl reconfigure
+
+- name: Restart gitlab
+  command: gitlab-ctl restart
 
 - name: listen on non-standard ssh port
   blockinfile:

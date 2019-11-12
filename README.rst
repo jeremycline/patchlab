@@ -20,9 +20,11 @@ installation of PatchLab.
 GitLab
 ------
 
-GitLab's web UI is available at https://localhost:8443/. You'll be prompted for
-a password, set one and you'll be able to log in with it and the username
-"root". Cloning over SSH is available on localhost:2222.
+GitLab's web UI is available at https://localhost:8443/.
+
+The Ansible role restores it from backup, so there is already an administrator,
+"root", with the password "password". Cloning over SSH is available on
+localhost:2222.
 
 Before you can set up a web hook you need to allow web hooks to private networks
 by navigating to https://localhost:8443/admin/application_settings/network and
@@ -32,12 +34,6 @@ box in the Outbound requests section.
 Patchwork
 ---------
 
-The Patchwork web UI is available at http://localhost:8000/. Before you can log
-in you need to make a super user account; you can do so with::
-
-    $ vagrant ssh pw
-    $ workon patchlab
-    $ python manage.py createsuperuser
-
-Once you've created a super user you can log into the Django admin interface at
+The Patchwork web UI is available at http://localhost:8000/. A preconfigured
+super user "admin" has the password "admin" which you can use to log in to
 http://localhost:8000/admin/.
