@@ -1,20 +1,18 @@
 from unittest import mock
-import os
 
-from django.test import override_settings, TestCase as DjangoTestCase
+from django.test import override_settings
 from patchwork import models as pw_models
-import vcr
 import gitlab as gitlab_module
 
 from patchlab import tasks, models
-from . import FIXTURES, BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR
+from . import BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR, BaseTestCase
 
 
 @mock.patch(
     "patchlab.tasks.email_utils.formatdate",
     mock.Mock(return_value="Mon, 04 Nov 2019 23:00:00 -0000"),
 )
-class PrepareEmailsTests(DjangoTestCase):
+class PrepareEmailsTests(BaseTestCase):
     """
     Tests for the _prepare_emails function.
 
@@ -23,25 +21,18 @@ class PrepareEmailsTests(DjangoTestCase):
     """
 
     def setUp(self):
-        self.maxDiff = None
-        my_vcr = vcr.VCR(
-            cassette_library_dir=os.path.join(FIXTURES, "VCR/"), record_mode="once"
-        )
-        self.vcr = my_vcr.use_cassette(self.id())
-        self.vcr.__enter__()
-        self.addCleanup(self.vcr.__exit__, None, None, None)
-
-        self.project = pw_models.Project(
+        super().setUp()
+        self.project = pw_models.Project.objects.create(
             linkname="ark",
             name="ARK",
             listid="kernel.lists.fedoraproject.org",
             listemail="kernel@lists.fedoraproject.org",
         )
-        self.forge = models.GitForge(
-            project=self.project,
-            host="gitlab.example.com",
-            forge_id=1,
-            subject_prefix="TEST PATCH",
+        self.forge = models.GitForge.objects.create(
+            project=self.project, host="gitlab.example.com", forge_id=1,
+        )
+        self.branch = models.Branch.objects.create(
+            git_forge=self.forge, subject_prefix="TEST", name="internal",
         )
 
     @mock.patch("patchlab.tasks.email_utils.make_msgid")
@@ -129,101 +120,63 @@ class PrepareEmailsTests(DjangoTestCase):
     "patchlab.tasks.email_utils.formatdate",
     mock.Mock(return_value="Mon, 04 Nov 2019 23:00:00 -0000"),
 )
-class RecordBridgingTests(DjangoTestCase):
+class RecordBridgingTests(BaseTestCase):
     """Tests for :func:`patchlab.tasks._record_bridging`."""
 
     def setUp(self):
-        self.maxDiff = None
-        my_vcr = vcr.VCR(
-            cassette_library_dir=os.path.join(FIXTURES, "VCR/"), record_mode="once"
-        )
-        self.vcr = my_vcr.use_cassette(self.id())
-        self.vcr.__enter__()
-        self.addCleanup(self.vcr.__exit__, None, None, None)
         super().setUp()
-
-    def test_multi_patch_series(self):
-        project = pw_models.Project(
+        pw_models.State(ordering=0, name="test").save()
+        self.project = pw_models.Project.objects.create(
             linkname="ark",
             name="ARK",
             listid="kernel.lists.fedoraproject.org",
             listemail="kernel@lists.fedoraproject.org",
+            web_url="https://gitlab/root/kernel",
         )
-        project.save()
-        pw_models.State(ordering=0, name="test").save()
-        forge = models.GitForge(
-            project=project,
-            host="gitlab.example.com",
-            forge_id=1,
-            subject_prefix="ARK INTERNAL PATCH",
+        self.forge = models.GitForge.objects.create(
+            project=self.project, host="gitlab.example.com", forge_id=1,
         )
-        forge.save()
-        gitlab = gitlab_module.Gitlab(
+        self.branch = models.Branch.objects.create(
+            git_forge=self.forge, subject_prefix="ARK INTERNAL", name="internal",
+        )
+        self.gitlab = gitlab_module.Gitlab(
             "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
         )
-        project = gitlab.projects.get(1)
-        merge_request = project.mergerequests.get(2)
-        emails = tasks._prepare_emails(gitlab, forge, project, merge_request)
 
-        tasks._record_bridging(forge.project.listid, 1, emails)
+    def test_multi_patch_series(self):
+        project = self.gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(2)
+        emails = tasks._prepare_emails(
+            self.gitlab, self.forge, self.project, merge_request
+        )
+
+        tasks._record_bridging(self.forge.project.listid, 1, emails)
 
         self.assertEqual(3, models.BridgedSubmission.objects.count())
         self.assertEqual(2, pw_models.Patch.objects.count())
         self.assertEqual(1, pw_models.CoverLetter.objects.count())
 
     def test_single_patch_series(self):
-        project = pw_models.Project(
-            linkname="ark",
-            name="ARK",
-            listid="kernel.lists.fedoraproject.org",
-            listemail="kernel@lists.fedoraproject.org",
-        )
-        project.save()
-        pw_models.State(ordering=0, name="test").save()
-        forge = models.GitForge(
-            project=project,
-            host="gitlab.example.com",
-            forge_id=1,
-            subject_prefix="ARK INTERNAL PATCH",
-        )
-        forge.save()
-        gitlab = gitlab_module.Gitlab(
-            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
-        )
-        project = gitlab.projects.get(1)
+        project = self.gitlab.projects.get(1)
         merge_request = project.mergerequests.get(1)
-        emails = tasks._prepare_emails(gitlab, forge, project, merge_request)
+        emails = tasks._prepare_emails(
+            self.gitlab, self.forge, self.project, merge_request
+        )
 
-        tasks._record_bridging(forge.project.listid, 1, emails)
+        tasks._record_bridging(self.forge.project.listid, 1, emails)
 
         self.assertEqual(1, models.BridgedSubmission.objects.count())
         self.assertEqual(1, pw_models.Patch.objects.count())
 
     def test_duplicate_patches(self):
         """Assert if the same emails are provided to _record_bridging it raises an exception."""
-        project = pw_models.Project(
-            linkname="ark",
-            name="ARK",
-            listid="kernel.lists.fedoraproject.org",
-            listemail="kernel@lists.fedoraproject.org",
-        )
-        project.save()
-        pw_models.State(ordering=0, name="test").save()
-        forge = models.GitForge(
-            project=project,
-            host="gitlab.example.com",
-            forge_id=1,
-            subject_prefix="ARK INTERNAL PATCH",
-        )
-        forge.save()
-        gitlab = gitlab_module.Gitlab(
-            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
-        )
-        project = gitlab.projects.get(1)
+        project = self.gitlab.projects.get(1)
         merge_request = project.mergerequests.get(1)
-        emails = tasks._prepare_emails(gitlab, forge, project, merge_request)
+        emails = tasks._prepare_emails(
+            self.gitlab, self.forge, self.project, merge_request
+        )
 
-        tasks._record_bridging(forge.project.listid, 1, emails)
+        tasks._record_bridging(self.forge.project.listid, 1, emails)
         self.assertRaises(
-            ValueError, tasks._record_bridging, forge.project.listid, 1, emails
+            ValueError, tasks._record_bridging, self.forge.project.listid, 1, emails
         )

@@ -2,7 +2,8 @@ from email import message_from_string
 from unittest import mock
 
 from django.core import mail
-from django.test import override_settings, TestCase as DjangoTestCase
+from django.test import override_settings
+
 from patchwork.parser import parse_mail
 from patchwork import models as pw_models
 
@@ -12,12 +13,13 @@ from . import (
     MULTI_PATCH_GIT_AM_FAILURE,
     MULTI_COMMIT_MR,
     SINGLE_COMMIT_MR,
+    BaseTestCase,
 )
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 @mock.patch("patchlab.bridge.subprocess.run")
-class NotifyAmFailureTests(DjangoTestCase):
+class NotifyAmFailureTests(BaseTestCase):
     def setUp(self):
         super().setUp()
         try:
@@ -25,23 +27,20 @@ class NotifyAmFailureTests(DjangoTestCase):
         except AttributeError:
             pass
 
-        self.project = pw_models.Project(
+        pw_models.State(ordering=0, name="test").save()
+        self.project = pw_models.Project.objects.create(
             linkname="ark",
             name="ARK",
             listid="kernel.lists.fedoraproject.org",
             listemail="kernel@lists.fedoraproject.org",
             web_url="https://gitlab.example.com/root/kernel",
         )
-        self.project.save()
-        pw_models.State(ordering=0, name="test").save()
-        self.forge = models.GitForge(
-            project=self.project,
-            host="gitlab.example.com",
-            forge_id=1,
-            subject_prefix="TEST PATCH",
-            development_branch="master",
+        self.forge = models.GitForge.objects.create(
+            project=self.project, host="gitlab.example.com", forge_id=1,
         )
-        self.forge.save()
+        self.branch = models.Branch.objects.create(
+            git_forge=self.forge, subject_prefix="TEST PATCH", name="master",
+        )
 
     def test_single_patch(self, mock_run):
         """Assert single patches that don't apply result in useful error emails."""
@@ -50,7 +49,7 @@ class NotifyAmFailureTests(DjangoTestCase):
             message_from_string(SINGLE_COMMIT_MR), "kernel.lists.fedoraproject.org"
         )
 
-        bridge._notify_am_failure(self.project, pw_models.Series.objects.all()[0])
+        bridge._notify_am_failure(self.forge, pw_models.Series.objects.all()[0])
 
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(SINGLE_PATCH_GIT_AM_FAILURE, mail.outbox[0].body)
@@ -68,7 +67,7 @@ class NotifyAmFailureTests(DjangoTestCase):
         for email in MULTI_COMMIT_MR:
             parse_mail(message_from_string(email), "kernel.lists.fedoraproject.org")
 
-        bridge._notify_am_failure(self.project, pw_models.Series.objects.all()[0])
+        bridge._notify_am_failure(self.forge, pw_models.Series.objects.all()[0])
 
         self.assertEqual(1, len(mail.outbox))
         self.assertEqual(MULTI_PATCH_GIT_AM_FAILURE, mail.outbox[0].body)

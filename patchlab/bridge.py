@@ -18,7 +18,7 @@ import backoff
 import gitlab as gitlab_module
 import requests
 
-from .models import BridgedSubmission
+from .models import BridgedSubmission, GitForge
 
 
 _log = logging.Logger(__name__)
@@ -150,23 +150,25 @@ def open_merge_request(
         return
 
     series = Series.objects.get(pk=series_id)
-
-    _reset_tree(patchwork_project.git_forge)
-
-    try:
-        _create_branch(patchwork_project, series, branch_name)
-    except ValueError:
-        return
-
     if series.cover_letter:
         description = series.cover_letter.content
+        target_branch = patchwork_project.git_forge.branch(series.cover_letter)
     else:
-        description = series.patches.order_by("number").first().content
+        patch = series.patches.order_by("number").first()
+        description = patch.content
+        target_branch = patchwork_project.git_forge.branch(patch)
+
+    _reset_tree(patchwork_project.git_forge, target_branch)
+
+    try:
+        _create_branch(patchwork_project.git_forge, series, branch_name)
+    except ValueError:
+        return
 
     merge_request = gitlab_project.mergerequests.create(
         {
             "source_branch": branch_name,
-            "target_branch": patchwork_project.git_forge.development_branch,
+            "target_branch": target_branch,
             "title": series.name,
             "labels": ["From email"],
             "remove_source_branch": True,
@@ -192,7 +194,7 @@ def open_merge_request(
         bridged_submission.save()
 
 
-def _reset_tree(git_forge):
+def _reset_tree(git_forge, target_branch):
     """Reset a git tree to the latest upstream commit on the development branch."""
     subprocess.run(
         ["git", "-C", git_forge.repo_path, "fetch", "origin"], timeout=300, check=True
@@ -204,7 +206,7 @@ def _reset_tree(git_forge):
             git_forge.repo_path,
             "reset",
             "--hard",
-            f"origin/{git_forge.development_branch}",
+            f"origin/{target_branch}",
         ],
         check=True,
     )
@@ -212,13 +214,7 @@ def _reset_tree(git_forge):
         ["git", "-C", git_forge.repo_path, "am", "--abort"], check=False,
     )
     subprocess.run(
-        [
-            "git",
-            "-C",
-            git_forge.repo_path,
-            "checkout",
-            f"origin/{git_forge.development_branch}",
-        ],
+        ["git", "-C", git_forge.repo_path, "checkout", f"origin/{target_branch}"],
         check=True,
     )
 
@@ -228,9 +224,8 @@ def _reset_tree(git_forge):
     (subprocess.CalledProcessError, subprocess.TimeoutExpired),
     logger=__name__,
 )
-def _create_branch(patchwork_project, series, branch_name):
+def _create_branch(git_forge, series, branch_name):
     """Create a branch on the remote from a series."""
-    git_forge = patchwork_project.git_forge
     subprocess.run(
         ["git", "-C", git_forge.repo_path, "branch", "-D", branch_name], check=False
     )
@@ -245,7 +240,7 @@ def _create_branch(patchwork_project, series, branch_name):
             check=True,
         )
     except subprocess.CalledProcessError:
-        _notify_am_failure(patchwork_project, series)
+        _notify_am_failure(git_forge, series)
         raise ValueError("Series cannot be applied")
 
     subprocess.run(
@@ -255,16 +250,11 @@ def _create_branch(patchwork_project, series, branch_name):
     )
 
 
-def _notify_am_failure(patchwork_project: Project, series: Series) -> None:
+def _notify_am_failure(git_forge: GitForge, series: Series) -> None:
     """Notify a developer that the series could not be applied to a project."""
+    target_branch = git_forge.branch(series.patches.first())
     commit = subprocess.run(
-        [
-            "git",
-            "-C",
-            patchwork_project.git_forge.repo_path,
-            "rev-parse",
-            f"origin/{patchwork_project.git_forge.development_branch}",
-        ],
+        ["git", "-C", git_forge.repo_path, "rev-parse", f"origin/{target_branch}"],
         check=True,
         capture_output=True,
         text=True,
@@ -276,9 +266,9 @@ def _notify_am_failure(patchwork_project: Project, series: Series) -> None:
         msgid = series.patches.first().msgid
 
     body = GIT_AM_FAILURE.format(
-        branch_name=patchwork_project.git_forge.development_branch,
+        branch_name=target_branch,
         commit=commit.stdout,
-        url=patchwork_project.web_url,
+        url=git_forge.project.web_url,
         title=series.name,
     )
     mail = EmailMessage(

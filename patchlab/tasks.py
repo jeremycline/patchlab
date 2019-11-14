@@ -12,7 +12,7 @@ from patchwork import parser as patchwork_parser
 from patchwork.models import Submission
 import gitlab as gitlab_module
 
-from patchlab.models import GitForge, BridgedSubmission
+from patchlab.models import GitForge, BridgedSubmission, Branch
 
 _log = logging.getLogger(__name__)
 
@@ -49,6 +49,18 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
     commits = list(reversed(list(merge_request.commits())))
     num_commits = len(commits)
 
+    try:
+        branch = Branch.objects.get(
+            git_forge=git_forge, name=merge_request.target_branch
+        )
+    except Branch.DoesNotExist:
+        # Branch isn't configured to be bridged, skip.
+        _log.info(
+            "There is no branch in the patchlab database for %s; skipping",
+            merge_request.target_branch,
+        )
+        return []
+
     emails = []
     if num_commits > 1:
         # Compose a cover letter based on the pull request description.
@@ -58,7 +70,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             "X-Patchlab-Merge-Request": f"{merge_request.web_url}",
         }
         cover_letter = EmailMessage(
-            subject=f"[{git_forge.subject_prefix} 0/{num_commits}] {merge_request.title}",
+            subject=f"[{branch.subject_prefix} PATCH 0/{num_commits}] {merge_request.title}",
             body=merge_request.description,
             to=[git_forge.project.listemail],
             cc=[mr_from],
@@ -90,7 +102,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             old_subject = patch["Subject"][match.span()[1] :]
         else:
             old_subject = " " + patch["Subject"].strip()
-        patch_prefix = f"[{git_forge.subject_prefix}"
+        patch_prefix = f"[{branch.subject_prefix} PATCH"
         if num_commits > 1:
             patch_prefix += f" {str(i)}/{num_commits}"
         patch_prefix += "]"
@@ -155,8 +167,16 @@ def _email_merge_request(host: str, project_id: int, merge_id: int) -> None:
     """
     Email a merge request to a mailing list.
     """
+    gitlab = gitlab_module.Gitlab.from_config(host)
+    project = gitlab.projects.get(project_id)
+    merge_request = project.mergerequests.get(merge_id)
+
     try:
-        git_forge = GitForge.objects.get(host=host, project_id=project_id)
+        git_forge = GitForge.objects.get(
+            host=host,
+            project_id=project_id,
+            development_branch=merge_request.target_branch,
+        )
     except GitForge.DoesNotExist:
         _log.error(
             "Web hook received for project id %d on %s, but no git forge exists",
@@ -164,10 +184,6 @@ def _email_merge_request(host: str, project_id: int, merge_id: int) -> None:
             host,
         )
         return
-
-    gitlab = gitlab_module.Gitlab.from_config(host)
-    project = gitlab.projects.get(project_id)
-    merge_request = project.mergerequests.get(merge_id)
 
     # TODO backoff on failure, gitlab might be down
     emails = _prepare_emails(gitlab, git_forge, project, merge_request)

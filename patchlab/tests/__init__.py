@@ -1,8 +1,30 @@
 # flake8: noqa
 import os
 
+from django.db.models.signals import post_save
+from django.test import TestCase
+import vcr
+
+
 TEST_ROOT = os.path.dirname(os.path.realpath(__file__))
 FIXTURES = os.path.join(TEST_ROOT, "fixtures")
+
+
+class BaseTestCase(TestCase):
+    """Base class for Django tests."""
+
+    def setUp(self):
+        """Common setup for tests."""
+        # Import here because the Django app isn't set up until here.
+        from patchwork.models import Patch
+
+        post_save.disconnect(sender=Patch, dispatch_uid="patchlab_mr")
+        my_vcr = vcr.VCR(
+            cassette_library_dir=os.path.join(FIXTURES, "VCR/"), record_mode="once"
+        )
+        self.vcr = my_vcr.use_cassette(self.id())
+        self.vcr.__enter__()
+        self.addCleanup(self.vcr.__exit__, None, None, None)
 
 
 SINGLE_COMMIT_MR = """Content-Type: text/plain; charset="utf-8"
