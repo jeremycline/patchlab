@@ -9,6 +9,7 @@
   with_items:
     - avahi
     - git
+    - git-email
     - vim-enhanced
     - python3-virtualenvwrapper
     - mutt
