@@ -28,6 +28,31 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
  # bootstrap and run with ansible
 
+ config.vm.define "gitlab" do |gitlab|
+    gitlab.vm.host_name = "gitlab"
+    gitlab.vm.box_url = "https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1907_01.Libvirt.box"
+    gitlab.vm.box = "centos7-1907-libvirt"
+    gitlab.vm.box_download_checksum = "10907f19d5ff7d5bab5bef414bdb7305bbff39502001bd36b82ef3a9afc62910"
+    gitlab.vm.box_download_checksum_type = "sha256"
+
+    # Expose Gitlab on port 8443 for the web UI and SSH on 2222
+    gitlab.vm.network "forwarded_port", guest: 443, host: 8443
+    gitlab.vm.network "forwarded_port", guest: 2222, host: 2222
+
+    gitlab.vm.provision "shell", inline: "sudo yum update -y"
+    gitlab.vm.provision "ansible" do |ansible|
+        ansible.playbook = "devel/ansible/gitlab-playbook.yml"
+    end
+
+    gitlab.vm.provider :libvirt do |domain|
+        # Season to taste
+        domain.cpus = 4
+        domain.graphics_type = "spice"
+        domain.memory = 4096
+        domain.video_type = "qxl"
+        # domain.volume_cache = "unsafe"
+    end
+ end
 
  config.vm.define "pw" do |pw|
     pw.vm.box = "fedora/30-cloud-base"
@@ -56,32 +81,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # your development guest becoming corrupted (in which case you should only need to do a
         # vagrant destroy and vagrant up to get a new one).
         #
-        # domain.volume_cache = "unsafe"
-    end
- end
-
- config.vm.define "gitlab" do |gitlab|
-    gitlab.vm.host_name = "gitlab"
-    gitlab.vm.box_url = "https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1907_01.Libvirt.box"
-    gitlab.vm.box = "centos7-1907-libvirt"
-    gitlab.vm.box_download_checksum = "10907f19d5ff7d5bab5bef414bdb7305bbff39502001bd36b82ef3a9afc62910"
-    gitlab.vm.box_download_checksum_type = "sha256"
-
-    # Expose Gitlab on port 8443 for the web UI and SSH on 2222
-    gitlab.vm.network "forwarded_port", guest: 443, host: 8443
-    gitlab.vm.network "forwarded_port", guest: 2222, host: 2222
-
-    gitlab.vm.provision "shell", inline: "sudo yum update -y"
-    gitlab.vm.provision "ansible" do |ansible|
-        ansible.playbook = "devel/ansible/gitlab-playbook.yml"
-    end
-
-    gitlab.vm.provider :libvirt do |domain|
-        # Season to taste
-        domain.cpus = 4
-        domain.graphics_type = "spice"
-        domain.memory = 4096
-        domain.video_type = "qxl"
         # domain.volume_cache = "unsafe"
     end
  end
