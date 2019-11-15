@@ -18,15 +18,18 @@ Django
 Git
 ===
 
-Patchlab makes use of the ``git`` command line to apply patches and open
-merge requests on GitLab. As such, the user that runs the ``email2gitlab``
-service needs a valid git configuration that contains at least a user and
-email::
+Patchlab makes use of the ``git`` command line to apply patches and open merge
+requests on GitLab. As such, the user that runs the ``parsemail.sh`` or
+``series2gitlab`` service needs a valid git configuration that contains at
+least a user and email::
 
     [user]
     email = you@example.com
     name = Your Name
 
+Git repositories should be stored in
+``PATCHLAB_REPO_DIR/<git-forge-hostname>-<git-forge-id>`` and have write access
+to the "origin" remote where it pushes branches.
 
 Gitlab
 ======

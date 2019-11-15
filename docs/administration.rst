@@ -57,6 +57,11 @@ Git Forges
 
 .. autoclass:: patchlab.models.GitForge
 
+Branch
+~~~~~~
+
+.. autoclass:: patchlab.models.Branch
+
 Bridged Submissions
 ~~~~~~~~~~~~~~~~~~~
 
