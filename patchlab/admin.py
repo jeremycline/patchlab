@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
+
 from django.contrib import admin
 
 from patchlab.models import GitForge, BridgedSubmission, Branch

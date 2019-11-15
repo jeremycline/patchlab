@@ -63,6 +63,8 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
+    maintainer="Jeremy Cline",
+    maintainer_email="jcline@fedoraproject.org",
     license="GPLv2+",
     platforms=["GNU/Linux"],
     keywords=["patchwork", "gitlab", "django"],

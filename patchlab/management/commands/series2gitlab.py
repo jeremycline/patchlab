@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 from django.core.management.base import BaseCommand, CommandError
 from patchwork.models import Project
 import gitlab as gitlab_module

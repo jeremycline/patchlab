@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 """Web hooks for bridging GitLab into email."""
 import json
 

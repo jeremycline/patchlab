@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 from email import message_from_string, utils as email_utils
 from typing import List
 import logging

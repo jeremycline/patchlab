@@ -1,3 +1,4 @@
+# SPDX-License-Identifier: GPL-2.0-or-later
 import logging
 
 from django.db.models.signals import post_save
