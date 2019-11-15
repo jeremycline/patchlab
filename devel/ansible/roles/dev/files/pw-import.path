@@ -1,0 +1,8 @@
+[Unit]
+Description=Loads mail into Patchwork
+
+[Path]
+PathChanged=/var/spool/mail/vagrant
+
+[Install]
+WantedBy=default.target

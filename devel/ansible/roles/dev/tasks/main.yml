@@ -125,11 +125,22 @@
   with_items:
     - patchwork.service
     - celery-worker@.service
+    - pw-import.service
+    - pw-import.path
 
 - name: Start the Patchwork development server
   become_user: "{{ ansible_env.SUDO_USER }}"
   systemd:
     name: patchwork.service
+    state: started
+    enabled: yes
+    scope: user
+    daemon_reload: yes
+
+- name: Enable patchwork importer
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  systemd:
+    name: pw-import.path
     state: started
     enabled: yes
     scope: user

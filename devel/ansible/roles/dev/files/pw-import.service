@@ -1,0 +1,7 @@
+[Unit]
+Description=Trains the ham filter
+
+[Service]
+RestartSec=1min
+Type=oneshot
+ExecStart=/home/vagrant/.virtualenvs/patchlab/bin/python /home/vagrant/patchlab/manage.py parsearchive /var/spool/mail/vagrant
