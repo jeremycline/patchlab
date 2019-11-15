@@ -1,6 +1,8 @@
+backoff
 sphinx>=2.2
 celery
 django
 requests
 python-gitlab
+vcrpy
 git+https://github.com/jeremycline/patchwork.git#egg=patchwork
