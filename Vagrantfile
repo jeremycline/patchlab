@@ -36,8 +36,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     gitlab.vm.box_download_checksum_type = "sha256"
 
     # Expose Gitlab on port 8443 for the web UI and SSH on 2222
-    gitlab.vm.network "forwarded_port", guest: 443, host: 8443
-    gitlab.vm.network "forwarded_port", guest: 2222, host: 2222
+    gitlab.vm.network "forwarded_port", guest: 443, host: 8443, host_ip: "0.0.0.0"
+    gitlab.vm.network "forwarded_port", guest: 2222, host: 2222, host_ip: "0.0.0.0"
 
     gitlab.vm.provision "shell", inline: "sudo yum update -y"
     gitlab.vm.provision "ansible" do |ansible|
@@ -59,9 +59,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     pw.vm.synced_folder ".", "/home/vagrant/patchlab", type: "sshfs"
 
     # Forward traffic on the host to the Django development server on the guest
-    pw.vm.network "forwarded_port", guest: 8000, host: 8000
+    pw.vm.network "forwarded_port", guest: 8000, host: 8000, host_ip: "0.0.0.0"
     # The RabbitMQ admin console, http://localhost:15672 (username "guest", password "guest")
-    pw.vm.network "forwarded_port", guest: 15672, host: 15672
+    pw.vm.network "forwarded_port", guest: 15672, host: 15672, host_ip: "0.0.0.0"
     pw.vm.host_name = "patchwork"
     pw.vm.provision "shell", inline: "sudo dnf update -y && sudo dnf -y install python3-libselinux"
     pw.vm.provision "ansible" do |ansible|
