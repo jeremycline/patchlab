@@ -8,13 +8,14 @@ API to retrieve completed patch series, applies them to a git repository with
 git-am, pushes them to a GitLab repository, and opens a pull request.
 """
 
+import email
 import logging
 import os
 import subprocess
 
 from celery import exceptions as celery_exceptions
 from django.core.mail import EmailMessage
-from patchwork.models import Project, Series
+from patchwork.models import Comment, Project, Series
 from patchwork.views.utils import series_to_mbox
 import backoff
 import gitlab as gitlab_module
@@ -40,6 +41,33 @@ request:
   3. git push <remote-name> <branch-name> --push-option=merge_request.create \\
        --push-option=merge_request.title="{title}"
 """
+
+
+def submit_gitlab_comment(gitlab: gitlab_module.Gitlab, comment: Comment) -> None:
+    """Bridge Patchwork comments to Gitlab."""
+    try:
+        bridged_submission = BridgedSubmission.objects.get(
+            submission=comment.submission
+        )
+    except BridgedSubmission.DoesNotExist:
+        _log.info("Unable to find a bridged submission for %s", str(comment.submission))
+        return
+
+    project = gitlab.projects.get(comment.submission.project.git_forge.project_id)
+    merge_request = project.mergerequests.get(bridged_submission.merge_request)
+
+    # Turn Ack-by/Nack-by into Gitlab tags. This doesn't attempt to undo any
+    # previous tags so if someone Acks and then Nacks the merge request will
+    # have both tags.
+    for match in comment.response_re.finditer(comment.content):
+        tag, name_and_address = match.group(0).split(":")
+        _, address = email.utils.parseaddr(name_and_address)
+        merge_request.labels.append(f"{tag}: {address}")
+    merge_request.save()
+
+    note = merge_request.notes.create({"body": f"```\n{comment.content}\n```"})
+
+    return merge_request, note
 
 
 @backoff.on_exception(

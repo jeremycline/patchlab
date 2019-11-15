@@ -3,9 +3,9 @@ import email
 import logging
 
 from django.db.models.signals import post_save
-from patchwork.models import Patch
+from patchwork.models import Comment, Patch
 
-from .tasks import open_merge_request
+from .tasks import open_merge_request, submit_gitlab_comment
 
 _log = logging.getLogger(__name__)
 
@@ -40,4 +40,18 @@ def patch_event_handler(sender, **kwargs):
         return
 
 
+def comment_event_handler(sender, **kwargs):
+    """
+    A signal handler that bridges emailed comments to a merge request, if one
+    exists.
+    """
+    try:
+        submit_gitlab_comment.apply_async((kwargs["instance"].id,))
+    except Exception:
+        _log.exception("Failed to dispatch task for comment %d", kwargs["instance"].id)
+
+
 post_save.connect(patch_event_handler, sender=Patch, dispatch_uid="patchlab_mr")
+post_save.connect(
+    comment_event_handler, sender=Comment, dispatch_uid="patchlab_comments"
+)

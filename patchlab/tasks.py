@@ -6,6 +6,7 @@ from celery import shared_task
 from django.core.exceptions import ObjectDoesNotExist
 from billiard.process import current_process
 from patchwork.models import Series
+from patchwork import models as pw_models
 import gitlab as gitlab_module
 
 from patchlab import bridge as email_bridge, gitlab2email
@@ -40,6 +41,30 @@ def open_merge_request(series_id: int) -> None:
     except Exception as e:
         _log.warning("Failed to open merge request, retry in 1 minute")
         raise open_merge_request.retry(exc=e, throw=False, countdown=60)
+
+
+@shared_task
+def submit_gitlab_comment(comment_id: int) -> None:
+    """Submit an emailed comment as a Gitlab comment."""
+    try:
+        comment = pw_models.Comment.objects.get(pk=comment_id)
+    except pw_models.Comment.DoesNotExist:
+        _log.info("Received invalid comment id %d, dropping task", comment_id)
+        return
+
+    try:
+        gitlab = gitlab_module.Gitlab.from_config(
+            comment.submission.project.git_forge.host
+        )
+    except gitlab_module.config.ConfigError:
+        _log.error(
+            "Missing Gitlab configuration for %s; skipping comment %i",
+            comment.submission.project.git_forge.host,
+            comment.msgid,
+        )
+        return
+
+    email_bridge.submit_gitlab_comment(gitlab, comment)
 
 
 @shared_task

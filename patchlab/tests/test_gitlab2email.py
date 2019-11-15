@@ -197,7 +197,9 @@ class RecordBridgingTests(BaseTestCase):
 
         self.assertEqual(3, models.BridgedSubmission.objects.count())
         self.assertEqual(2, pw_models.Patch.objects.count() - initial_patch_count)
-        self.assertEqual(1, pw_models.CoverLetter.objects.count() - initial_cover_letter_count)
+        self.assertEqual(
+            1, pw_models.CoverLetter.objects.count() - initial_cover_letter_count
+        )
 
     def test_single_patch_series(self):
         project = self.gitlab.projects.get(1)
@@ -213,7 +215,9 @@ class RecordBridgingTests(BaseTestCase):
 
         self.assertEqual(1, models.BridgedSubmission.objects.count())
         self.assertEqual(1, pw_models.Patch.objects.count() - initial_patch_count)
-        self.assertEqual(initial_cover_letter_count, pw_models.CoverLetter.objects.count())
+        self.assertEqual(
+            initial_cover_letter_count, pw_models.CoverLetter.objects.count()
+        )
 
     def test_duplicate_patches(self):
         """Assert if the same emails are provided to _record_bridging it raises an exception."""

@@ -13,7 +13,7 @@ FIXTURES = os.path.join(TEST_ROOT, "fixtures")
 class BaseTestCase(TestCase):
     """Base class for Django tests."""
 
-    fixtures = ['unittest.json']
+    fixtures = ["unittest.json"]
 
     def setUp(self):
         """Common setup for tests."""
@@ -21,6 +21,7 @@ class BaseTestCase(TestCase):
         from patchwork.models import Patch
 
         post_save.disconnect(sender=Patch, dispatch_uid="patchlab_mr")
+        post_save.disconnect(sender=Patch, dispatch_uid="patchlab_comments")
         my_vcr = vcr.VCR(
             cassette_library_dir=os.path.join(FIXTURES, "VCR/"), record_mode="once"
         )
