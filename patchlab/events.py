@@ -1,5 +1,8 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
+from contextlib import contextmanager
+import fcntl
 import logging
+import os
 
 from django.db.models.signals import post_save
 from patchwork.models import Patch
@@ -8,6 +11,18 @@ import gitlab as gitlab_module
 from .bridge import open_merge_request
 
 _log = logging.getLogger(__name__)
+
+
+@contextmanager
+def file_lock(path):
+    """Acquire an exclusive (to the process) lock on the file at the given patch."""
+    fd = os.open(path, os.O_RDONLY)
+    _log.info("Acquiring lock for %s", path)
+    fcntl.flock(fd, fcntl.LOCK_EX)
+    yield
+    _log.info("Releasing lock for %s", path)
+    fcntl.flock(fd, fcntl.LOCK_UN)
+    os.close(fd)
 
 
 def patch_event_handler(sender, **kwargs):
@@ -35,7 +50,8 @@ def patch_event_handler(sender, **kwargs):
         return
 
     try:
-        open_merge_request(gitlab, project, instance.series.id)
+        with file_lock(project.git_forge.repo_path):
+            open_merge_request(gitlab, project, instance.series.id)
     except Exception:
         _log.exception(
             "Failed to open merge request for series id %i in %s",
