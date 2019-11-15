@@ -1,0 +1,53 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - xTzqx9yQzAJtaj-sG8yJ
+      User-Agent:
+      - python-gitlab/1.13.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1
+  response:
+    body:
+      string: ''
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2634'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 19 Nov 2019 18:19:48 GMT
+      Etag:
+      - W/"045034f49f6ae3ed73defdb794d7136b"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - hd59X5kLpK1
+      X-Runtime:
+      - '0.339597'
+    status:
+      code: 502
+      message: Bad Gateway

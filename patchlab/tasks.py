@@ -3,16 +3,19 @@ from email import message_from_string, utils as email_utils
 from typing import List
 import logging
 import re
+import os
 import urllib
 
 from celery import shared_task
+from billiard.process import current_process
 from django.conf import settings
 from django.core.mail import EmailMessage, get_connection
 from django.core.mail.utils import DNS_NAME
 from patchwork import parser as patchwork_parser
-from patchwork.models import Submission
+from patchwork.models import Submission, Series
 import gitlab as gitlab_module
 
+from patchlab import bridge as email_bridge
 from patchlab.models import GitForge, BridgedSubmission, Branch
 
 _log = logging.getLogger(__name__)
@@ -41,6 +44,29 @@ Finally, check out the merge request:
 It is also possible to review the merge request on GitLab at:
     {merge_url}
 """
+
+
+@shared_task
+def open_merge_request(series_id: int) -> None:
+    """Convert a Patchwork series into a pull request in GitLab."""
+    series = Series.objects.get(pk=series_id)
+    try:
+        gitlab = gitlab_module.Gitlab.from_config(series.project.git_forge.host)
+    except gitlab_module.config.ConfigError:
+        _log.error(
+            "Missing Gitlab configuration for %s; skipping series %i",
+            series.project.git_forge.host,
+            series_id,
+        )
+        return
+
+    # This assumes Celery has been configured with an acceptable working directory
+    # either via the systemd unit file or the celery worker argument.
+    working_dir = os.path.join(os.getcwd(), str(current_process().name))
+    if not os.path.exists(working_dir):
+        os.mkdir(working_dir)
+
+    email_bridge.open_merge_request(gitlab, series, working_dir)
 
 
 def _prepare_emails(gitlab, git_forge, project, merge_request):

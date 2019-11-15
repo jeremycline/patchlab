@@ -8,10 +8,11 @@ API to retrieve completed patch series, applies them to a git repository with
 git-am, pushes them to a GitLab repository, and opens a pull request.
 """
 
-from typing import Optional, Sequence
 import logging
+import os
 import subprocess
 
+from celery import exceptions as celery_exceptions
 from django.core.mail import EmailMessage
 from patchwork.models import Project, Series
 from patchwork.views.utils import series_to_mbox
@@ -23,10 +24,6 @@ from .models import BridgedSubmission, GitForge
 
 
 _log = logging.Logger(__name__)
-
-session = requests.Session()
-gitlab = None
-
 
 GIT_AM_FAILURE = """
 Hello,
@@ -45,86 +42,30 @@ request:
 """
 
 
-def poll_events(api_url: str, project: str, since: Optional[str]) -> Sequence[dict]:
-    """
-    Poll events from a project since a certain datetime.
-    """
-    params = {"category": "series-completed", "project": project}
-    if since:
-        params["since"] = since
-
-    response = session.get(f"{api_url}/events/", params=params, timeout=30)
-    response.raise_for_status()
-    for event in response.json():
-        yield event
-
-    next_page = _link(response)
-    while next_page:
-        response = session.get(next_page, timeout=30)
-        response.raise_for_status()
-        for event in response.json():
-            yield event
-
-
-def _link(response: requests.Response, ref: str = "next") -> Optional[str]:
-    """
-    Parse the page URL from the Link header given a ref.
-
-    Arguments:
-        response: The response object that might contain a pagination link.
-        ref: The URL type to retrieve. For possible values, refer to
-            https://patchwork.readthedocs.io/en/latest/api/rest/#link-header
-    """
-    try:
-        next_page = [
-            l["url"]
-            for l in requests.utils.parse_header_links(response.headers["Link"])
-            if l["ref"] == ref
-        ]
-    except KeyError:
-        return
-
-    try:
-        return next_page[0]
-    except IndexError:
-        return
-
-
-class Retry(Exception):
-    """Raised in a helper method if a step needs retrying due to missing resources"""
-
-    pass
-
-
 @backoff.on_exception(
     backoff.expo,
     (
         gitlab_module.exceptions.GitlabConnectionError,
         requests.exceptions.ConnectionError,
-        Retry,
     ),
     logger=__name__,
 )
 def open_merge_request(
-    gitlab: gitlab_module.Gitlab, patchwork_project: Project, series_id: int
+    gitlab: gitlab_module.Gitlab, series: Series, working_dir: str
 ) -> None:
     """
     Convert a Patchwork series into a pull request in GitLab.
 
     The series is converted by:
 
-    1. Checking out the latest version of the configured development branch
-       from GitLab.
+    1. Checking out a git worktree based on the clone from the Git Forge.
     2. Checking out a new branch for the series using "email/series-<id>" as
        the branch naming scheme.
     3. Using "git-am" to apply the series to the new branch.
-    4. Opening a merge request using git push options with GitLab.
+    4. Pushing the git branch to the remote.
+    5. Opening a merge request via the API
 
     Pull requests opened with the function are tagged with ``From email``.
-
-    Args:
-        series: A dictionary representing a series as retrieved from
-            the patchwork API.
 
     Raises:
         django.db.OperationalError: If the database connection is unavailable.
@@ -134,12 +75,13 @@ def open_merge_request(
         subprocess.TimeoutExpired: If a subprocess call exceeds its timeout.
         subprocess.CalledProcessError: If a subprocess call fails in an unrecoverable manner.
     """
-    branch_name = f"emails/series-{series_id}"
+    patchwork_project = series.project
+    branch_name = f"emails/series-{series.id}"
     try:
         gitlab_project = gitlab.projects.get(patchwork_project.git_forge.forge_id)
     except gitlab_module.exceptions.GitlabGetError as e:
         if e.response_code >= 500:
-            raise Retry(str(e))
+            raise celery_exceptions.Retry(message=str(e), exc=e)
         else:
             _log.error("Fatal error requesting %r: %r", patchwork_project.git_forge, e)
             raise
@@ -150,20 +92,25 @@ def open_merge_request(
         )
         return
 
-    series = Series.objects.get(pk=series_id)
-    if series.cover_letter:
-        description = series.cover_letter.content
-        target_branch = patchwork_project.git_forge.branch(series.cover_letter)
-    else:
-        patch = series.patches.order_by("number").first()
-        description = patch.content
-        target_branch = patchwork_project.git_forge.branch(patch)
-
-    _reset_tree(patchwork_project.git_forge, target_branch)
+    try:
+        if series.cover_letter:
+            description = series.cover_letter.content
+            target_branch = patchwork_project.git_forge.branch(series.cover_letter)
+        else:
+            patch = series.patches.order_by("number").first()
+            description = patch.content
+            target_branch = patchwork_project.git_forge.branch(patch)
+    except ValueError as e:
+        # Raised if there's no branch for the given patch tags.
+        _log.error(str(e))
+        return
 
     try:
-        _create_branch(patchwork_project.git_forge, series, branch_name)
+        _create_remote_branch(
+            patchwork_project, series, branch_name, target_branch, working_dir
+        )
     except ValueError:
+        _notify_am_failure(patchwork_project.git_forge, series)
         return
 
     merge_request = gitlab_project.mergerequests.create(
@@ -195,57 +142,71 @@ def open_merge_request(
         bridged_submission.save()
 
 
-def _reset_tree(git_forge, target_branch):
-    """Reset a git tree to the latest upstream commit on the development branch."""
+def _create_remote_branch(
+    patchwork_project: Project,
+    series: Series,
+    branch_name: str,
+    target_branch: str,
+    working_dir: str,
+) -> None:
+    """
+    Create a branch on the remote for the given series.
+
+    Raises:
+        ValueError: If the series cannot be applied to the target branch.
+    """
+    worktree_path = os.path.join(
+        working_dir,
+        f"{patchwork_project.git_forge.host}-{patchwork_project.git_forge.forge_id}",
+    )
+    if not os.path.exists(worktree_path):
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                patchwork_project.git_forge.repo_path,
+                "worktree",
+                "add",
+                "-f",
+                "-B",
+                branch_name,
+                worktree_path,
+                f"origin/{target_branch}",
+            ],
+            timeout=300,
+            check=True,
+        )
+
     subprocess.run(
-        ["git", "-C", git_forge.repo_path, "fetch", "origin"], timeout=300, check=True
+        ["git", "-C", worktree_path, "fetch", "origin"], timeout=300, check=True
     )
     subprocess.run(
         [
             "git",
             "-C",
-            git_forge.repo_path,
-            "reset",
-            "--hard",
+            worktree_path,
+            "checkout",
+            "-f",
+            "-B",
+            branch_name,
             f"origin/{target_branch}",
         ],
         check=True,
     )
-    subprocess.run(
-        ["git", "-C", git_forge.repo_path, "am", "--abort"], check=False,
-    )
-    subprocess.run(
-        ["git", "-C", git_forge.repo_path, "checkout", f"origin/{target_branch}"],
-        check=True,
-    )
 
-
-@backoff.on_exception(
-    backoff.expo,
-    (subprocess.CalledProcessError, subprocess.TimeoutExpired),
-    logger=__name__,
-)
-def _create_branch(git_forge, series, branch_name):
-    """Create a branch on the remote from a series."""
-    subprocess.run(
-        ["git", "-C", git_forge.repo_path, "branch", "-D", branch_name], check=False
-    )
-    subprocess.run(
-        ["git", "-C", git_forge.repo_path, "checkout", "-b", branch_name], check=True
-    )
     try:
         subprocess.run(
-            ["git", "-C", git_forge.repo_path, "am"],
+            ["git", "-C", worktree_path, "am"],
             input=series_to_mbox(series),
             text=True,
             check=True,
         )
-    except subprocess.CalledProcessError:
-        _notify_am_failure(git_forge, series)
-        raise ValueError("Series cannot be applied")
+    except subprocess.CalledProcessError as e:
+        subprocess.run(["git", "-C", worktree_path, "am", "--abort"], check=True)
+        raise ValueError(f"Unable to apply series: {str(e)}")
 
     subprocess.run(
-        ["git", "-C", git_forge.repo_path, "push", "-f", "origin", branch_name],
+        ["git", "-C", worktree_path, "push", "-f", "origin", branch_name],
         check=True,
         timeout=60,
     )
