@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 Environment="DJANGO_SETTINGS_MODULE=patchlab.settings.ci"
+WorkingDirectory=/var/tmp/patchlab
 ExecStart=/home/vagrant/.virtualenvs/patchlab/bin/celery worker --pool=prefork --concurrency=1 -E -A patchlab -l info -n celery-worker%i@%H
 
 [Install]

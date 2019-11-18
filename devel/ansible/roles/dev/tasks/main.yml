@@ -147,6 +147,12 @@
     scope: user
     daemon_reload: yes
 
+- name: Create celery working directory
+  become_user: "{{ ansible_env.SUDO_USER }}"
+  file:
+    path: /var/tmp/patchlab
+    state: directory
+
 - name: Start two celery workers
   become_user: "{{ ansible_env.SUDO_USER }}"
   systemd:
