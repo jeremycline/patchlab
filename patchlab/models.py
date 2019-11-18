@@ -27,7 +27,7 @@ class BridgedSubmission(models.Model):
         Submission, on_delete=models.CASCADE, primary_key=True
     )
     merge_request = models.IntegerField(null=False, blank=False)
-    commit = models.CharField(max_length=128, unique=True, null=True, blank=True)
+    commit = models.CharField(max_length=128, null=True, blank=True)
 
 
 class GitForge(models.Model):
