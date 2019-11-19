@@ -12,6 +12,7 @@
     - git-email
     - vim-enhanced
     - python3-virtualenvwrapper
+    - python3-tox
     - mutt
     - nss-mdns
 
