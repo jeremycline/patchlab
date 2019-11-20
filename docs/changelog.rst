@@ -8,7 +8,7 @@ v0.2.0 (2019-11-20)
 ===================
 
 Features
-========
+--------
 
 * Apply emailed patches in asynchronous Celery tasks. Each worker creates a
   git worktree to perform its work in. These worktrees are located in the
@@ -16,7 +16,7 @@ Features
   the systemd unit file or by way of the ``celery worker --workdir`` argument.
 
 Bug Fixes
-=========
+---------
 
 * The merge request to email bridge now works with multiple development branches.
 
