@@ -1,2 +1,4 @@
 set folder = "/var/spool/mail"
 set mbox = "+vagrant"
+set edit_headers = yes
+set sort=threads
