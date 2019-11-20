@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
+import email
 import logging
 
 from django.db.models.signals import post_save
@@ -20,6 +21,12 @@ def patch_event_handler(sender, **kwargs):
     instance = kwargs["instance"]
 
     if not (instance.series and instance.series.received_all):
+        return
+
+    # Make sure we don't bridge merge requests back to merge requests
+    mail_headers = email.message_from_string(instance.headers)
+    if "X-Patchlab-Merge-Request" in mail_headers:
+        _log.info("Ignoring instance %d as it originated from the bridge.", instance.id)
         return
 
     try:

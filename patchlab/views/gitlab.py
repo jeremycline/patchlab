@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: GPL-2.0-or-later
 """Web hooks for bridging GitLab into email."""
 import json
+import urllib
 
 from django import http
 from django.conf import settings
@@ -50,7 +51,13 @@ def merge_request(payload: dict) -> http.HttpResponse:
     except KeyError:
         return http.HttpResponseBadRequest("Payload expected to have labels")
 
-    merge_request_hook.apply_async((payload,))
+    if payload["object_attributes"]["action"] not in ("open", "reopen"):
+        return http.HttpResponse("Skipping event as merge request has not been opened")
+
+    project_id = payload["project"]["id"]
+    merge_id = payload["object_attributes"]["id"]
+    host = urllib.parse.urlsplit(payload["project"]["web_url"]).hostname
+    merge_request_hook.apply_async((host, project_id, merge_id))
     return http.HttpResponse("Success!")
 
 
