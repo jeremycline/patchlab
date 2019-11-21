@@ -55,7 +55,7 @@ def merge_request(payload: dict) -> http.HttpResponse:
         return http.HttpResponse("Skipping event as merge request has not been opened")
 
     project_id = payload["project"]["id"]
-    merge_id = payload["object_attributes"]["id"]
+    merge_id = payload["object_attributes"]["iid"]
     host = urllib.parse.urlsplit(payload["project"]["web_url"]).hostname
     merge_request_hook.apply_async((host, project_id, merge_id))
     return http.HttpResponse("Success!")
