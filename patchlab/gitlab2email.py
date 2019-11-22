@@ -98,8 +98,6 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         )
         return []
 
-    mr_author = gitlab.users.get(merge_request.author["id"])
-    mr_from = f"{mr_author.name} <{mr_author.email}>"
     commits = list(reversed(list(merge_request.commits())))
     num_commits = len(commits)
 
@@ -111,12 +109,14 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             "Message-ID": email_utils.make_msgid(domain=DNS_NAME),
             "X-Patchlab-Merge-Request": f"{merge_request.web_url}",
         }
-        body = f"From: {mr_from}\n\n{merge_request.description}"
+        body = (
+            f"From: {merge_request.author['username']} on {git_forge.host}\n\n"
+            f"{merge_request.description}"
+        )
         cover_letter = EmailMessage(
             subject=f"[{branch.subject_prefix} PATCH 0/{num_commits}] {merge_request.title}",
             body=body,
             to=[git_forge.project.listemail],
-            cc=[mr_from],
             headers=headers,
             reply_to=[git_forge.project.listemail],
         )
@@ -167,7 +167,6 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             subject=subject,
             body=f"From: {patch_author}\n\n{patch.get_payload()}",
             to=[git_forge.project.listemail],
-            cc=[mr_from],
             headers=headers,
             reply_to=[git_forge.project.listemail],
         )
