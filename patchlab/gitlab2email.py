@@ -71,7 +71,7 @@ def email_merge_request(
         for email in emails:
             try:
                 submission = _record_bridging(git_forge.project.listid, merge_id, email)
-            except ValueError as e:
+            except ValueError:
                 # This message is already in the database, skip sending it
                 continue
             email.connection = conn
