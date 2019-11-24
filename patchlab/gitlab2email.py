@@ -64,7 +64,6 @@ def email_merge_request(
             urllib.parse.urlsplit(gitlab.url).hostname,
         )
         return
-
     project = gitlab.projects.get(forge_id)
     merge_request = project.mergerequests.get(merge_id)
 
