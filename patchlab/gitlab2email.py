@@ -67,13 +67,10 @@ def email_merge_request(
     project = gitlab.projects.get(forge_id)
     merge_request = project.mergerequests.get(merge_id)
 
-    # TODO backoff on failure, gitlab or the database might be down
     emails = _prepare_emails(gitlab, git_forge, project, merge_request)
-    # TODO backoff, database might be down
-    _record_bridging(git_forge.project.listid, merge_id, emails)
-    # TODO catch errors, email server might be down
     with get_connection(fail_silently=False) as conn:
         for email in emails:
+            _record_bridging(git_forge.project.listid, merge_id, email)
             email.connection = conn
             email.send(fail_silently=False)
 
@@ -170,7 +167,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
     return emails
 
 
-def _record_bridging(listid: str, merge_id: int, emails: List[EmailMessage]) -> None:
+def _record_bridging(listid: str, merge_id: int, email: EmailMessage) -> None:
     """
     Create the Patchwork submission records. This would happen when the mail
     hit the mailing list, but doing so now lets us associate them with a
@@ -182,22 +179,20 @@ def _record_bridging(listid: str, merge_id: int, emails: List[EmailMessage]) -> 
             patchwork; this indicates Patchwork has changed in some way or
             there's a bug in this function.
     """
-    for email in emails:
-        try:
-            patchwork_parser.parse_mail(email.message(), list_id=listid)
-        except patchwork_parser.DuplicateMailError:
-            _log.error(
-                "Message ID %s is already in the database; do not call "
-                "_record_bridging twice with the same email",
-                email.extra_headers["Message-ID"],
-            )
-            raise ValueError(emails)
-
-    for email in emails:
-        submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
-        bridged_submission = BridgedSubmission(
-            submission=submission,
-            merge_request=merge_id,
-            commit=email.extra_headers.get("X-Patchlab-Commit"),
+    try:
+        patchwork_parser.parse_mail(email.message(), list_id=listid)
+    except patchwork_parser.DuplicateMailError:
+        _log.error(
+            "Message ID %s is already in the database; do not call "
+            "_record_bridging twice with the same email",
+            email.extra_headers["Message-ID"],
         )
-        bridged_submission.save()
+        raise ValueError(email)
+
+    submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
+    bridged_submission = BridgedSubmission(
+        submission=submission,
+        merge_request=merge_id,
+        commit=email.extra_headers.get("X-Patchlab-Commit"),
+    )
+    bridged_submission.save()

@@ -41,7 +41,7 @@ def open_merge_request(series_id: int) -> None:
         email_bridge.open_merge_request(gitlab, series, working_dir)
     except Exception as e:
         _log.warning(
-                "Failed to open merge request, retry in 1 minute"
+            "Failed to open merge request, retry in 1 minute"
         )
         raise open_merge_request.retry(exc=e, throw=False, countdown=60)
 
@@ -62,7 +62,7 @@ def merge_request_hook(gitlab_host: str, project_id: int, merge_id: int) -> None
         gitlab2email.email_merge_request(gitlab, project_id, merge_id)
     except Exception as e:
         _log.warning(
-                "Failed to email merge request from merge_request_hook, retrying in 1 minute"
+            "Failed to email merge request from merge_request_hook, retrying in 1 minute"
         )
         raise merge_request_hook.retry(exc=e, throw=False, countdown=60)
 
