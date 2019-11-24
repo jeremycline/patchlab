@@ -4,7 +4,6 @@ This module deals with turning Gitlab objects (merge requests, comments) into
 emails.
 """
 from email import message_from_string, utils as email_utils
-from typing import List
 import logging
 import re
 import urllib
