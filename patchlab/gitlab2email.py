@@ -70,9 +70,19 @@ def email_merge_request(
     emails = _prepare_emails(gitlab, git_forge, project, merge_request)
     with get_connection(fail_silently=False) as conn:
         for email in emails:
-            _record_bridging(git_forge.project.listid, merge_id, email)
+            try:
+                submission = _record_bridging(git_forge.project.listid, merge_id, email)
+            except ValueError as e:
+                # This message is already in the database, skip sending it
+                continue
             email.connection = conn
-            email.send(fail_silently=False)
+            try:
+                email.send(fail_silently=False)
+            except Exception as e:
+                # We were unable to send the email, delete it from the submission db
+                # and raise the exception so we try again
+                submission.delete()
+                raise e
 
 
 def _prepare_emails(gitlab, git_forge, project, merge_request):
@@ -196,3 +206,4 @@ def _record_bridging(listid: str, merge_id: int, email: EmailMessage) -> None:
         commit=email.extra_headers.get("X-Patchlab-Commit"),
     )
     bridged_submission.save()
+    return bridged_submission
