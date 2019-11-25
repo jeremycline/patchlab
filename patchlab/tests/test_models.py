@@ -17,7 +17,7 @@ class BranchTests(BaseTestCase):
             listemail="kernel@lists.fedoraproject.org",
         )
         self.forge = models.GitForge.objects.create(
-            project=self.project, host="gitlab.example.com", forge_id=1,
+            project=self.project, host="gitlab.example.com", forge_id=1
         )
         pw_models.State(ordering=0, name="test").save()
         parse_mail(

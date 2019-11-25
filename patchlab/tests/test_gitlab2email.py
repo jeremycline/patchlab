@@ -48,10 +48,10 @@ class PrepareEmailsTests(BaseTestCase):
             listemail="kernel@lists.fedoraproject.org",
         )
         self.forge = models.GitForge.objects.create(
-            project=self.project, host="gitlab.example.com", forge_id=1,
+            project=self.project, host="gitlab.example.com", forge_id=1
         )
         self.branch = models.Branch.objects.create(
-            git_forge=self.forge, subject_prefix="TEST", name="internal",
+            git_forge=self.forge, subject_prefix="TEST", name="internal"
         )
 
     @mock.patch("patchlab.gitlab2email.email_utils.make_msgid")
@@ -175,10 +175,10 @@ class RecordBridgingTests(BaseTestCase):
             web_url="https://gitlab/root/kernel",
         )
         self.forge = models.GitForge.objects.create(
-            project=self.project, host="gitlab.example.com", forge_id=1,
+            project=self.project, host="gitlab.example.com", forge_id=1
         )
         self.branch = models.Branch.objects.create(
-            git_forge=self.forge, subject_prefix="ARK INTERNAL", name="internal",
+            git_forge=self.forge, subject_prefix="ARK INTERNAL", name="internal"
         )
         self.gitlab = gitlab_module.Gitlab(
             "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False

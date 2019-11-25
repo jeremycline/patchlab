@@ -32,10 +32,10 @@ class OpenMergeRequestTests(BaseTestCase):
             scm_url="https://gitlab/root/patchlab_test.git",
         )
         cls.forge = models.GitForge.objects.create(
-            project=cls.project, host="gitlab", forge_id=1,
+            project=cls.project, host="gitlab", forge_id=1
         )
         cls.branch = models.Branch.objects.create(
-            git_forge=cls.forge, subject_prefix="TEST PATCH", name="master",
+            git_forge=cls.forge, subject_prefix="TEST PATCH", name="master"
         )
         parse_mail(message_from_string(SINGLE_COMMIT_MR), "patchlab.example.com")
         cls.gitlab = gitlab_module.Gitlab(
@@ -98,10 +98,10 @@ class NotifyAmFailureTests(BaseTestCase):
             web_url="https://gitlab.example.com/root/kernel",
         )
         self.forge = models.GitForge.objects.create(
-            project=self.project, host="gitlab.example.com", forge_id=1,
+            project=self.project, host="gitlab.example.com", forge_id=1
         )
         self.branch = models.Branch.objects.create(
-            git_forge=self.forge, subject_prefix="TEST PATCH", name="master",
+            git_forge=self.forge, subject_prefix="TEST PATCH", name="master"
         )
 
     def test_single_patch(self, mock_run):

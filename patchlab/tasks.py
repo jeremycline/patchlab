@@ -27,9 +27,7 @@ def open_merge_request(series_id: int) -> None:
         )
         return
     except ObjectDoesNotExist:
-        _log.error(
-            "No git forge associated with %s", str(series.project),
-        )
+        _log.error("No git forge associated with %s", str(series.project))
         return
 
     # This assumes Celery has been configured with an acceptable working directory
@@ -40,9 +38,7 @@ def open_merge_request(series_id: int) -> None:
     try:
         email_bridge.open_merge_request(gitlab, series, working_dir)
     except Exception as e:
-        _log.warning(
-            "Failed to open merge request, retry in 1 minute"
-        )
+        _log.warning("Failed to open merge request, retry in 1 minute")
         raise open_merge_request.retry(exc=e, throw=False, countdown=60)
 
 

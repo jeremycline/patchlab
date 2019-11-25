@@ -52,7 +52,7 @@ def email_merge_request(
     """Email a merge request to a mailing list."""
     try:
         git_forge = GitForge.objects.get(
-            host=urllib.parse.urlsplit(gitlab.url).hostname, forge_id=forge_id,
+            host=urllib.parse.urlsplit(gitlab.url).hostname, forge_id=forge_id
         )
     except GitForge.DoesNotExist:
         _log.error(
