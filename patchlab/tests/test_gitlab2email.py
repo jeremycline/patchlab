@@ -191,7 +191,8 @@ class RecordBridgingTests(BaseTestCase):
             self.gitlab, self.forge, self.project, merge_request
         )
 
-        gitlab2email._record_bridging(self.forge.project.listid, 1, emails)
+        for email in emails:
+            gitlab2email._record_bridging(self.forge.project.listid, 1, email)
 
         self.assertEqual(3, models.BridgedSubmission.objects.count())
         self.assertEqual(2, pw_models.Patch.objects.count())
@@ -204,7 +205,8 @@ class RecordBridgingTests(BaseTestCase):
             self.gitlab, self.forge, self.project, merge_request
         )
 
-        gitlab2email._record_bridging(self.forge.project.listid, 1, emails)
+        for email in emails:
+            gitlab2email._record_bridging(self.forge.project.listid, 1, email)
 
         self.assertEqual(1, models.BridgedSubmission.objects.count())
         self.assertEqual(1, pw_models.Patch.objects.count())
@@ -217,11 +219,13 @@ class RecordBridgingTests(BaseTestCase):
             self.gitlab, self.forge, self.project, merge_request
         )
 
-        gitlab2email._record_bridging(self.forge.project.listid, 1, emails)
-        self.assertRaises(
-            ValueError,
-            gitlab2email._record_bridging,
-            self.forge.project.listid,
-            1,
-            emails,
-        )
+        for email in emails:
+            gitlab2email._record_bridging(self.forge.project.listid, 1, email)
+
+            self.assertRaises(
+                ValueError,
+                gitlab2email._record_bridging,
+                self.forge.project.listid,
+                1,
+                email,
+            )
