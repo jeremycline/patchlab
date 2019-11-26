@@ -27,9 +27,7 @@ def open_merge_request(series_id: int) -> None:
         )
         return
     except ObjectDoesNotExist:
-        _log.error(
-            "No git forge associated with %s", str(series.project),
-        )
+        _log.error("No git forge associated with %s", str(series.project))
         return
 
     # This assumes Celery has been configured with an acceptable working directory
@@ -37,8 +35,11 @@ def open_merge_request(series_id: int) -> None:
     working_dir = os.path.join(os.getcwd(), str(current_process().name))
     if not os.path.exists(working_dir):
         os.mkdir(working_dir)
-
-    email_bridge.open_merge_request(gitlab, series, working_dir)
+    try:
+        email_bridge.open_merge_request(gitlab, series, working_dir)
+    except Exception as e:
+        _log.warning("Failed to open merge request, retry in 1 minute")
+        raise open_merge_request.retry(exc=e, throw=False, countdown=60)
 
 
 @shared_task
@@ -53,7 +54,13 @@ def merge_request_hook(gitlab_host: str, project_id: int, merge_id: int) -> None
         merge_request: The merge request web hook payload from GitLab
     """
     gitlab = gitlab_module.Gitlab.from_config(gitlab_host)
-    gitlab2email.email_merge_request(gitlab, project_id, merge_id)
+    try:
+        gitlab2email.email_merge_request(gitlab, project_id, merge_id)
+    except Exception as e:
+        _log.warning(
+            "Failed to email merge request from merge_request_hook, retrying in 1 minute"
+        )
+        raise merge_request_hook.retry(exc=e, throw=False, countdown=60)
 
 
 @shared_task

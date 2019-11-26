@@ -9,9 +9,7 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-        ("patchwork", "0036_project_commit_url_format"),
-    ]
+    dependencies = [("patchwork", "0036_project_commit_url_format")]
 
     operations = [
         migrations.CreateModel(
@@ -124,7 +122,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterUniqueTogether(
-            name="gitforge", unique_together={("host", "forge_id")},
+            name="gitforge", unique_together={("host", "forge_id")}
         ),
         migrations.AddIndex(
             model_name="branch",

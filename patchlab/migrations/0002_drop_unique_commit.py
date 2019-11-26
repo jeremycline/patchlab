@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("patchlab", "0001_initial"),
-    ]
+    dependencies = [("patchlab", "0001_initial")]
 
     operations = [
         migrations.AlterField(
             model_name="bridgedsubmission",
             name="commit",
             field=models.CharField(blank=True, max_length=128, null=True),
-        ),
+        )
     ]

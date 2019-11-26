@@ -4,7 +4,6 @@ This module deals with turning Gitlab objects (merge requests, comments) into
 emails.
 """
 from email import message_from_string, utils as email_utils
-from typing import List
 import logging
 import re
 import urllib
@@ -53,7 +52,7 @@ def email_merge_request(
     """Email a merge request to a mailing list."""
     try:
         git_forge = GitForge.objects.get(
-            host=urllib.parse.urlsplit(gitlab.url).hostname, forge_id=forge_id,
+            host=urllib.parse.urlsplit(gitlab.url).hostname, forge_id=forge_id
         )
     except GitForge.DoesNotExist:
         _log.error(
@@ -64,19 +63,25 @@ def email_merge_request(
             urllib.parse.urlsplit(gitlab.url).hostname,
         )
         return
-
     project = gitlab.projects.get(forge_id)
     merge_request = project.mergerequests.get(merge_id)
 
-    # TODO backoff on failure, gitlab or the database might be down
     emails = _prepare_emails(gitlab, git_forge, project, merge_request)
-    # TODO backoff, database might be down
-    _record_bridging(git_forge.project.listid, merge_id, emails)
-    # TODO catch errors, email server might be down
     with get_connection(fail_silently=False) as conn:
         for email in emails:
+            try:
+                submission = _record_bridging(git_forge.project.listid, merge_id, email)
+            except ValueError:
+                # This message is already in the database, skip sending it
+                continue
             email.connection = conn
-            email.send(fail_silently=False)
+            try:
+                email.send(fail_silently=False)
+            except Exception as e:
+                # We were unable to send the email, delete it from the submission db
+                # and raise the exception so we try again
+                submission.delete()
+                raise e
 
 
 def _prepare_emails(gitlab, git_forge, project, merge_request):
@@ -171,7 +176,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
     return emails
 
 
-def _record_bridging(listid: str, merge_id: int, emails: List[EmailMessage]) -> None:
+def _record_bridging(listid: str, merge_id: int, email: EmailMessage) -> None:
     """
     Create the Patchwork submission records. This would happen when the mail
     hit the mailing list, but doing so now lets us associate them with a
@@ -183,22 +188,21 @@ def _record_bridging(listid: str, merge_id: int, emails: List[EmailMessage]) -> 
             patchwork; this indicates Patchwork has changed in some way or
             there's a bug in this function.
     """
-    for email in emails:
-        try:
-            patchwork_parser.parse_mail(email.message(), list_id=listid)
-        except patchwork_parser.DuplicateMailError:
-            _log.error(
-                "Message ID %s is already in the database; do not call "
-                "_record_bridging twice with the same email",
-                email.extra_headers["Message-ID"],
-            )
-            raise ValueError(emails)
-
-    for email in emails:
-        submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
-        bridged_submission = BridgedSubmission(
-            submission=submission,
-            merge_request=merge_id,
-            commit=email.extra_headers.get("X-Patchlab-Commit"),
+    try:
+        patchwork_parser.parse_mail(email.message(), list_id=listid)
+    except patchwork_parser.DuplicateMailError:
+        _log.error(
+            "Message ID %s is already in the database; do not call "
+            "_record_bridging twice with the same email",
+            email.extra_headers["Message-ID"],
         )
-        bridged_submission.save()
+        raise ValueError(email)
+
+    submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
+    bridged_submission = BridgedSubmission(
+        submission=submission,
+        merge_request=merge_id,
+        commit=email.extra_headers.get("X-Patchlab-Commit"),
+    )
+    bridged_submission.save()
+    return bridged_submission
