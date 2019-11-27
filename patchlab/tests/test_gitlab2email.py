@@ -101,6 +101,9 @@ class RerollTests(BaseTestCase):
         self.assertEqual(3, version)
         self.assertEqual(submission2.msgid, in_reply_to)
 
+    def test_prior_ccs(self):
+        """Assert all Ccs from prior bridged submissions are collected as Ccs."""
+
 
 @mock.patch(
     "patchlab.gitlab2email.email_utils.formatdate",
@@ -148,6 +151,49 @@ class PrepareEmailsTests(BaseTestCase):
 
         self.assertEqual(1, len(emails))
         self.assertEqual(SINGLE_COMMIT_MR, emails[0].message().as_string())
+
+    @mock.patch("patchlab.gitlab2email.email_utils.make_msgid")
+    def test_ccs(self, mock_make_msgid):
+        """
+        Assert a merge request with "Cc:" tags result in Ccing those users and
+        the author.
+        """
+        mock_make_msgid.return_value = "<4@localhost.localdomain>"
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(1)
+
+        emails = gitlab2email._prepare_emails(
+            gitlab, self.forge, project, merge_request
+        )
+
+        self.assertEqual(1, len(emails))
+        self.assertEqual(
+            sorted(["user@example.com", "jcline@redhat.com"]), sorted(emails[0].cc)
+        )
+
+    @override_settings(PATCHLAB_CC_WHITELIST=r"@notlocaldomain.com$")
+    @mock.patch("patchlab.gitlab2email.email_utils.make_msgid")
+    def test_ccs_not_whitelisted(self, mock_make_msgid):
+        """
+        Assert a merge request with "Cc:" tags that don't match the whitelist
+        are ignored.
+        """
+        mock_make_msgid.return_value = "<4@localhost.localdomain>"
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(1)
+
+        emails = gitlab2email._prepare_emails(
+            gitlab, self.forge, project, merge_request
+        )
+
+        self.assertEqual(1, len(emails))
+        self.assertEqual([], emails[0].cc)
 
     def test_no_branch(self):
         """Assert if there's no branch no emails are created."""

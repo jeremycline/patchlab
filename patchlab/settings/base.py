@@ -44,6 +44,10 @@ PATCHLAB_EMAIL_TO_GITLAB_COMMENT = True
 #: A list of labels that, if any are present on a merge request, are ignored.
 PATCHLAB_IGNORE_GITLAB_LABELS = ["🛑 Do Not Email"]
 
+#: A regular expression run against emails in the Cc: labels on merge requests
+#: that must match for the email to be included in the list of Ccs.
+PATCHLAB_CC_WHITELIST = r""
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
