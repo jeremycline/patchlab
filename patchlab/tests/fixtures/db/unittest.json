@@ -1,0 +1,205 @@
+[
+{
+    "model": "patchwork.person",
+    "pk": 1,
+    "fields": {
+        "email": "patchwork@patchwork.example.com",
+        "name": "Patchwork",
+        "user": null
+    }
+},
+{
+    "model": "patchwork.project",
+    "pk": 1,
+    "fields": {
+        "linkname": "patchlab_test",
+        "name": "patchlab_test",
+        "listid": "patchlab.example.com",
+        "listemail": "patchlab@patchlab.example.com",
+        "subject_match": "",
+        "web_url": "https://gitlab/root/patchlab_test/",
+        "scm_url": "https://gitlab/root/patchlab_test.git",
+        "webscm_url": "",
+        "list_archive_url": "",
+        "list_archive_url_format": "",
+        "commit_url_format": "",
+        "send_notifications": false,
+        "use_tags": true
+    }
+},
+{
+    "model": "patchwork.state",
+    "pk": 1,
+    "fields": {
+        "name": "Pending",
+        "ordering": 0,
+        "action_required": true
+    }
+},
+{
+    "model": "patchlab.gitforge",
+    "pk": 1,
+    "fields": {
+        "project": 1,
+        "host": "gitlab",
+        "forge_id": 1
+    }
+},
+{
+    "model": "patchlab.branch",
+    "pk": 1,
+    "fields": {
+        "git_forge": 1,
+        "subject_prefix": "TEST",
+        "subject_match": "",
+        "name": "master"
+    }
+},
+{
+    "model": "patchwork.series",
+    "pk": 1,
+    "fields": {
+        "project": 1,
+        "cover_letter": null,
+        "name": "[TEST] Bring balance to the equals signs",
+        "date": "2019-11-04T23:00:00",
+        "submitter": 1,
+        "version": 1,
+        "total": 1
+    }
+},
+{
+    "model": "patchwork.series",
+    "pk": 2,
+    "fields": {
+        "project": 1,
+        "cover_letter": 2,
+        "name": "Update the README in two un-atomic commits",
+        "date": "2019-12-02T17:33:04",
+        "submitter": 1,
+        "version": 1,
+        "total": 2
+    }
+},
+{
+    "model": "patchwork.seriesreference",
+    "pk": 1,
+    "fields": {
+        "series": 1,
+        "msgid": "<4@localhost.localdomain>"
+    }
+},
+{
+    "model": "patchwork.seriesreference",
+    "pk": 2,
+    "fields": {
+        "series": 2,
+        "msgid": "<157530798430.5472.9327296165743891677@patchwork>"
+    }
+},
+{
+    "model": "patchwork.submission",
+    "pk": 1,
+    "fields": {
+        "msgid": "<4@localhost.localdomain>",
+        "date": "2019-11-04T23:00:00",
+        "headers": "Content-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [TEST PATCH] Bring balance to the equals signs\nFrom: Patchwork <patchwork@patchwork.example.com>\nTo: kernel@lists.fedoraproject.org\nReply-To: kernel@lists.fedoraproject.org\nDate: Mon, 04 Nov 2019 23:00:00 -0000\nMessage-ID: <4@localhost.localdomain>\nX-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>\nX-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/1\nX-Patchlab-Commit: a958a0dff5e3c433eb99bc5f18cbcfad77433b0d",
+        "submitter": 1,
+        "content": "From: Jeremy Cline <jcline@redhat.com>\n\nThis is a silly change so I can write a test.\n\nSigned-off-by: Jeremy Cline <jcline@redhat.com>\n---\n README | 1 +\n 1 file changed, 1 insertion(+)",
+        "project": 1,
+        "name": "[TEST] Bring balance to the equals signs"
+    }
+},
+{
+    "model": "patchwork.submission",
+    "pk": 2,
+    "fields": {
+        "msgid": "<157530798430.5472.9327296165743891677@patchwork>",
+        "date": "2019-12-02T17:33:04",
+        "headers": "Content-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [TEST PATCH 0/2] Update the README in two un-atomic commits\nFrom: Patchwork <patchwork@patchwork.example.com>\nTo: patchlab@patchlab.example.com\nReply-To: patchlab@patchlab.example.com\nDate: Mon, 02 Dec 2019 17:33:04 -0000\nMessage-ID: <157530798430.5472.9327296165743891677@patchwork>\nX-Patchlab-Merge-Request: https://gitlab/root/patchlab_test/merge_requests/1",
+        "submitter": 1,
+        "content": "From: root on gitlab\n\nUpdate the README to make me want to read it more.",
+        "project": 1,
+        "name": "[TEST,0/2] Update the README in two un-atomic commits"
+    }
+},
+{
+    "model": "patchwork.submission",
+    "pk": 3,
+    "fields": {
+        "msgid": "<157530798437.5472.11305897222003626042@patchwork>",
+        "date": "2019-12-02T17:33:04",
+        "headers": "Content-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [TEST PATCH 1/2] Add a title to the readme\nFrom: Patchwork <patchwork@patchwork.example.com>\nTo: patchlab@patchlab.example.com\nReply-To: patchlab@patchlab.example.com\nDate: Mon, 02 Dec 2019 17:33:04 -0000\nMessage-ID: <157530798437.5472.11305897222003626042@patchwork>\nX-Patchlab-Patch-Author: Vagrant <vagrant@pw.example.com>\nX-Patchlab-Merge-Request: https://gitlab/root/patchlab_test/merge_requests/1\nX-Patchlab-Commit: 6c03d619b41b79761a34def190851bffc8c00b15\nIn-Reply-To: <157530798430.5472.9327296165743891677@patchwork>",
+        "submitter": 1,
+        "content": "From: Vagrant <vagrant@pw.example.com>\n\nThis is a silly change so I can write a test.\n\nSigned-off-by: Vagrant <vagrant@pw.example.com>\n---\n README | 4 ++++\n 1 file changed, 4 insertions(+)",
+        "project": 1,
+        "name": "[TEST,1/2] Add a title to the readme"
+    }
+},
+{
+    "model": "patchwork.submission",
+    "pk": 4,
+    "fields": {
+        "msgid": "<157530798441.5472.5857272673937166198@patchwork>",
+        "date": "2019-12-02T17:33:04",
+        "headers": "Content-Type: text/plain; charset=\"utf-8\"\nMIME-Version: 1.0\nContent-Transfer-Encoding: 7bit\nSubject: [TEST PATCH 2/2] Convert the README to restructured text\nFrom: Patchwork <patchwork@patchwork.example.com>\nTo: patchlab@patchlab.example.com\nReply-To: patchlab@patchlab.example.com\nDate: Mon, 02 Dec 2019 17:33:04 -0000\nMessage-ID: <157530798441.5472.5857272673937166198@patchwork>\nX-Patchlab-Patch-Author: Vagrant <vagrant@pw.example.com>\nX-Patchlab-Merge-Request: https://gitlab/root/patchlab_test/merge_requests/1\nX-Patchlab-Commit: 9c4cb5ac48622d2934c7ef8d8ddf46737795be14\nIn-Reply-To: <157530798430.5472.9327296165743891677@patchwork>",
+        "submitter": 1,
+        "content": "From: Vagrant <vagrant@pw.example.com>\n\nMake the README more readable.\n\nSigned-off-by: Vagrant <vagrant@pw.example.com>\n---\n README => README.rst | 0\n 1 file changed, 0 insertions(+), 0 deletions(-)\n rename README => README.rst (100%)",
+        "project": 1,
+        "name": "[TEST,2/2] Convert the README to restructured text"
+    }
+},
+{
+    "model": "patchwork.coverletter",
+    "pk": 2,
+    "fields": {}
+},
+{
+    "model": "patchwork.patch",
+    "pk": 1,
+    "fields": {
+        "diff": "diff --git a/README b/README\nindex 669ac7c32292..a0cc9c082916 100644\n--- a/README\n+++ b/README\n@@ -1,3 +1,4 @@\n+============\n Linux kernel\n ============\n \n",
+        "commit_ref": null,
+        "pull_url": null,
+        "delegate": null,
+        "state": 1,
+        "archived": false,
+        "hash": "b9ff119fe352837a994d2ce7750c1361649d0795",
+        "patch_project": 1,
+        "series": 1,
+        "number": 1
+    }
+},
+{
+    "model": "patchwork.patch",
+    "pk": 3,
+    "fields": {
+        "diff": "diff --git a/README b/README\nindex b86d4ff..91b7e7f 100644\n--- a/README\n+++ b/README\n@@ -1 +1,5 @@\n+=============\n+Patchlab Test\n+=============\n+\n This is a test repository for patchlab.\n",
+        "commit_ref": null,
+        "pull_url": null,
+        "delegate": null,
+        "state": 1,
+        "archived": false,
+        "hash": "9925d47676bfa311c67e9df39bbc2480a1b5a3f9",
+        "patch_project": 1,
+        "series": 2,
+        "number": 1
+    }
+},
+{
+    "model": "patchwork.patch",
+    "pk": 4,
+    "fields": {
+        "diff": "diff --git a/README b/README.rst\nsimilarity index 100%\nrename from README\nrename to README.rst\n",
+        "commit_ref": null,
+        "pull_url": null,
+        "delegate": null,
+        "state": 1,
+        "archived": false,
+        "hash": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+        "patch_project": 1,
+        "series": 2,
+        "number": 2
+    }
+}
+]

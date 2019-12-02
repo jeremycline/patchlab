@@ -19,7 +19,6 @@ class BranchTests(BaseTestCase):
         self.forge = models.GitForge.objects.create(
             project=self.project, host="gitlab.example.com", forge_id=1
         )
-        pw_models.State(ordering=0, name="test").save()
         parse_mail(
             email.message_from_string(SINGLE_COMMIT_MR),
             "kernel.lists.fedoraproject.org",

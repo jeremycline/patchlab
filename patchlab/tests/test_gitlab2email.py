@@ -166,7 +166,6 @@ class RecordBridgingTests(BaseTestCase):
 
     def setUp(self):
         super().setUp()
-        pw_models.State(ordering=0, name="test").save()
         self.project = pw_models.Project.objects.create(
             linkname="ark",
             name="ARK",
@@ -190,13 +189,15 @@ class RecordBridgingTests(BaseTestCase):
         emails = gitlab2email._prepare_emails(
             self.gitlab, self.forge, self.project, merge_request
         )
+        initial_patch_count = pw_models.Patch.objects.count()
+        initial_cover_letter_count = pw_models.CoverLetter.objects.count()
 
         for email in emails:
             gitlab2email._record_bridging(self.forge.project.listid, 1, email)
 
         self.assertEqual(3, models.BridgedSubmission.objects.count())
-        self.assertEqual(2, pw_models.Patch.objects.count())
-        self.assertEqual(1, pw_models.CoverLetter.objects.count())
+        self.assertEqual(2, pw_models.Patch.objects.count() - initial_patch_count)
+        self.assertEqual(1, pw_models.CoverLetter.objects.count() - initial_cover_letter_count)
 
     def test_single_patch_series(self):
         project = self.gitlab.projects.get(1)
@@ -204,12 +205,15 @@ class RecordBridgingTests(BaseTestCase):
         emails = gitlab2email._prepare_emails(
             self.gitlab, self.forge, self.project, merge_request
         )
+        initial_patch_count = pw_models.Patch.objects.count()
+        initial_cover_letter_count = pw_models.CoverLetter.objects.count()
 
         for email in emails:
             gitlab2email._record_bridging(self.forge.project.listid, 1, email)
 
         self.assertEqual(1, models.BridgedSubmission.objects.count())
-        self.assertEqual(1, pw_models.Patch.objects.count())
+        self.assertEqual(1, pw_models.Patch.objects.count() - initial_patch_count)
+        self.assertEqual(initial_cover_letter_count, pw_models.CoverLetter.objects.count())
 
     def test_duplicate_patches(self):
         """Assert if the same emails are provided to _record_bridging it raises an exception."""

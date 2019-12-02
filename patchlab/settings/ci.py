@@ -21,4 +21,4 @@ DATABASES = {
     }
 }
 
-FIXTURES_DIR = os.path.join(FIXTURES, "db")
+FIXTURE_DIRS = [os.path.join(FIXTURES, "db")]

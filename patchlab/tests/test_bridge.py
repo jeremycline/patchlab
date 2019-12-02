@@ -10,8 +10,6 @@ import gitlab as gitlab_module
 
 from .. import bridge, models
 from . import (
-    SINGLE_PATCH_GIT_AM_FAILURE,
-    MULTI_PATCH_GIT_AM_FAILURE,
     MULTI_COMMIT_MR,
     SINGLE_COMMIT_MR,
     BaseTestCase,
@@ -19,25 +17,9 @@ from . import (
 
 
 class OpenMergeRequestTests(BaseTestCase):
+
     @classmethod
     def setUpTestData(cls):
-
-        pw_models.State(ordering=0, name="test").save()
-        cls.project = pw_models.Project.objects.create(
-            linkname="patchlab_test",
-            name="patchlab_test",
-            listid="patchlab.example.com",
-            listemail="patchlab@patchlab.example.com",
-            web_url="https://gitlab/root/patchlab_test/",
-            scm_url="https://gitlab/root/patchlab_test.git",
-        )
-        cls.forge = models.GitForge.objects.create(
-            project=cls.project, host="gitlab", forge_id=1
-        )
-        cls.branch = models.Branch.objects.create(
-            git_forge=cls.forge, subject_prefix="TEST PATCH", name="master"
-        )
-        parse_mail(message_from_string(SINGLE_COMMIT_MR), "patchlab.example.com")
         cls.gitlab = gitlab_module.Gitlab(
             "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
         )
@@ -82,39 +64,38 @@ class OpenMergeRequestTests(BaseTestCase):
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 @mock.patch("patchlab.bridge.subprocess.run")
 class NotifyAmFailureTests(BaseTestCase):
+
     def setUp(self):
+        self.maxDiff = None
         super().setUp()
         try:
             mail.outbox.clear()
         except AttributeError:
             pass
 
-        pw_models.State(ordering=0, name="test").save()
-        self.project = pw_models.Project.objects.create(
-            linkname="ark",
-            name="ARK",
-            listid="kernel.lists.fedoraproject.org",
-            listemail="kernel@lists.fedoraproject.org",
-            web_url="https://gitlab.example.com/root/kernel",
-        )
-        self.forge = models.GitForge.objects.create(
-            project=self.project, host="gitlab.example.com", forge_id=1
-        )
-        self.branch = models.Branch.objects.create(
-            git_forge=self.forge, subject_prefix="TEST PATCH", name="master"
-        )
-
     def test_single_patch(self, mock_run):
         """Assert single patches that don't apply result in useful error emails."""
         mock_run.return_value.stdout = "abc123"
-        parse_mail(
-            message_from_string(SINGLE_COMMIT_MR), "kernel.lists.fedoraproject.org"
-        )
+        expected_message = """
+Hello,
 
-        bridge._notify_am_failure(self.forge, pw_models.Series.objects.all()[0])
+We were unable to apply this patch series to the current development branch.
+The current head of the master branch is commit abc123.
+
+Please rebase this series against the current development branch and resend it
+or, if you prefer never seeing this email again, submit your series as a pull
+request:
+
+  1. Create an account and fork https://gitlab/root/patchlab_test/.
+  2. git remote add <remote-name> <your-forked-repo>
+  3. git push <remote-name> <branch-name> --push-option=merge_request.create \\
+       --push-option=merge_request.title="[TEST] Bring balance to the equals signs"
+"""
+
+        bridge._notify_am_failure(models.GitForge.objects.first(), pw_models.Series.objects.get(pk=1))
 
         self.assertEqual(1, len(mail.outbox))
-        self.assertEqual(SINGLE_PATCH_GIT_AM_FAILURE, mail.outbox[0].body)
+        self.assertEqual(expected_message, mail.outbox[0].body)
         self.assertEqual(
             "<4@localhost.localdomain>", mail.outbox[0].extra_headers["In-Reply-To"]
         )
@@ -126,15 +107,28 @@ class NotifyAmFailureTests(BaseTestCase):
     def test_multi_patch_series(self, mock_run):
         """Assert multi-patch series with cover letters respond to the cover letter."""
         mock_run.return_value.stdout = "abc123"
-        for email in MULTI_COMMIT_MR:
-            parse_mail(message_from_string(email), "kernel.lists.fedoraproject.org")
+        expected_message = """
+Hello,
 
-        bridge._notify_am_failure(self.forge, pw_models.Series.objects.all()[0])
+We were unable to apply this patch series to the current development branch.
+The current head of the master branch is commit abc123.
+
+Please rebase this series against the current development branch and resend it
+or, if you prefer never seeing this email again, submit your series as a pull
+request:
+
+  1. Create an account and fork https://gitlab/root/patchlab_test/.
+  2. git remote add <remote-name> <your-forked-repo>
+  3. git push <remote-name> <branch-name> --push-option=merge_request.create \\
+       --push-option=merge_request.title="Update the README in two un-atomic commits"
+"""
+
+        bridge._notify_am_failure(models.GitForge.objects.first(), pw_models.Series.objects.get(pk=2))
 
         self.assertEqual(1, len(mail.outbox))
-        self.assertEqual(MULTI_PATCH_GIT_AM_FAILURE, mail.outbox[0].body)
+        self.assertEqual(expected_message, mail.outbox[0].body)
         self.assertEqual(
-            "<1@localhost.localdomain>", mail.outbox[0].extra_headers["In-Reply-To"]
+            "<157530798430.5472.9327296165743891677@patchwork>", mail.outbox[0].extra_headers["In-Reply-To"]
         )
-        self.assertEqual("Re: Update the README", mail.outbox[0].subject)
+        self.assertEqual("Re: Update the README in two un-atomic commits", mail.outbox[0].subject)
         self.assertEqual(["patchwork@patchwork.example.com"], mail.outbox[0].to)

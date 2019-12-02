@@ -13,6 +13,8 @@ FIXTURES = os.path.join(TEST_ROOT, "fixtures")
 class BaseTestCase(TestCase):
     """Base class for Django tests."""
 
+    fixtures = ['unittest.json']
+
     def setUp(self):
         """Common setup for tests."""
         # Import here because the Django app isn't set up until here.
@@ -147,38 +149,6 @@ rename to README.rst
 
 """,
 ]
-
-SINGLE_PATCH_GIT_AM_FAILURE = """
-Hello,
-
-We were unable to apply this patch series to the current development branch.
-The current head of the master branch is commit abc123.
-
-Please rebase this series against the current development branch and resend it
-or, if you prefer never seeing this email again, submit your series as a pull
-request:
-
-  1. Create an account and fork https://gitlab.example.com/root/kernel.
-  2. git remote add <remote-name> <your-forked-repo>
-  3. git push <remote-name> <branch-name> --push-option=merge_request.create \\
-       --push-option=merge_request.title="[TEST] Bring balance to the equals signs"
-"""
-
-MULTI_PATCH_GIT_AM_FAILURE = """
-Hello,
-
-We were unable to apply this patch series to the current development branch.
-The current head of the master branch is commit abc123.
-
-Please rebase this series against the current development branch and resend it
-or, if you prefer never seeing this email again, submit your series as a pull
-request:
-
-  1. Create an account and fork https://gitlab.example.com/root/kernel.
-  2. git remote add <remote-name> <your-forked-repo>
-  3. git push <remote-name> <branch-name> --push-option=merge_request.create \\
-       --push-option=merge_request.title="Update the README"
-"""
 
 BIG_EMAIL = """Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
