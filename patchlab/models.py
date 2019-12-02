@@ -89,7 +89,9 @@ class GitForge(models.Model):
         """
         msg = email.message_from_string(submission.headers)
         for branch in self.branches.all():
-            if re.match(branch.subject_match, msg["Subject"]):
+            if re.search(
+                branch.subject_match, msg["Subject"], flags=re.MULTILINE | re.IGNORECASE
+            ):
                 return branch.name
         else:
             raise ValueError(f"No branch matches {submission}")
