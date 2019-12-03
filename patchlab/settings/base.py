@@ -32,3 +32,16 @@ PATCHLAB_MAX_EMAILS = 25
 #: The directory to store Git trees in. The scheme inside this directory is
 #: <forge-host>-<forge-id>.
 PATCHLAB_REPO_DIR = "/var/lib/patchlab"
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"console": {"class": "logging.StreamHandler"}},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO"},
+        "celery": {"handlers": ["console"], "level": "INFO"},
+        "patchwork": {"handlers": ["console"], "level": "INFO"},
+        "patchlab": {"handlers": ["console"], "level": "INFO"},
+    },
+    "root": {"handlers": ["console"], "level": "WARNING"},
+}
