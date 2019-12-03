@@ -46,6 +46,32 @@ It is also possible to review the merge request on GitLab at:
 """  # noqa: E501
 
 
+def email_pipeline(
+    gitlab: gitlab_module.Gitlab, project_id: int, pipeline_id: int
+) -> None:
+    """Email a patch series for a merge request, given a pipeline ID."""
+    project = gitlab.projects.get(project_id)
+
+    # This is dumb, but I can't find a better way to get to a merge request from
+    # the information in the pipeline web hook.
+    for merge_request in project.mergerequests.list(state="opened"):
+        pipelines = [p for p in merge_request.pipelines() if p["id"] == pipeline_id]
+        if len(pipelines) != 1:
+            continue
+
+        if merge_request.work_in_progress:
+            _log.info("Not emailing %r because it's a work in progress", merge_request)
+        elif merge_request.merge_status != "can_be_merged":
+            _log.info("Not emailing %r because it can't be merged", merge_request)
+        elif "From email" in merge_request.labels:
+            _log.info("Not emailing %r as it's from email to start with", merge_request)
+        else:
+            email_merge_request(gitlab, project_id, merge_request.iid)
+        break
+    else:
+        _log.info("Unable to map pipeline %d to a merge request", pipeline_id)
+
+
 def email_merge_request(
     gitlab: gitlab_module.Gitlab, forge_id: int, merge_id: int
 ) -> None:

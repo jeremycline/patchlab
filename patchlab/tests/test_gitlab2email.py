@@ -8,6 +8,73 @@ from patchlab import gitlab2email, models
 from . import BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR, BaseTestCase
 
 
+class EmailPipelineTests(BaseTestCase):
+    """Tests for :func:`gitlab2email.email_pipeline`."""
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_no_merge_request(self, mock_log):
+        """Assert if no open merge request exists for the pipeline id it is skipped."""
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_pipeline(gitlab, 1, 123)
+
+        mock_log.info.assert_called_once_with(
+            "Unable to map pipeline %d to a merge request", 123
+        )
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_unmergeable(self, mock_log):
+        """Assert MRs that cannot be merged are skipped."""
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_pipeline(gitlab, 1, 27)
+
+        mock_log.info.assert_called_once_with(
+            "Not emailing %r because it can't be merged", mock.ANY
+        )
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_work_in_progress(self, mock_log):
+        """Assert work-in-progress MRs are skipped."""
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_pipeline(gitlab, 1, 28)
+
+        mock_log.info.assert_called_once_with(
+            "Not emailing %r because it's a work in progress", mock.ANY
+        )
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_from_email(self, mock_log):
+        """Assert series that originated from email are skipped."""
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_pipeline(gitlab, 1, 29)
+
+        mock_log.info.assert_called_once_with(
+            "Not emailing %r as it's from email to start with", mock.ANY
+        )
+
+    @mock.patch("patchlab.gitlab2email.email_merge_request")
+    def test_success(self, mock_email_merge):
+        """Assert MRs are turned into emails."""
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_pipeline(gitlab, 1, 30)
+
+        mock_email_merge.assert_called_with(gitlab, 1, 7)
+
+
 class EmailMergeRequestTests(BaseTestCase):
     @mock.patch("patchlab.gitlab2email._log")
     def test_no_forge(self, mock_log):

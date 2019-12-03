@@ -89,5 +89,23 @@ def merge_request_hook(gitlab_host: str, project_id: int, merge_id: int) -> None
 
 
 @shared_task
+def pipeline_hook(gitlab_host: str, project_id: int, pipeline_id: int) -> None:
+    """
+    Handle a pipeline webhook for a merge request.
+
+    This assumes the pipeline has already been filtered for success.
+    """
+    gitlab = gitlab_module.Gitlab.from_config(gitlab_host)
+
+    try:
+        gitlab2email.email_pipeline(gitlab, project_id, pipeline_id)
+    except Exception as e:
+        _log.warning(
+            "Failed to email merge request from pipeline_hook, retrying in 1 minute"
+        )
+        raise merge_request_hook.retry(exc=e, throw=False, countdown=60)
+
+
+@shared_task
 def email_comment(comment):
     pass

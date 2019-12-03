@@ -1,0 +1,194 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - xTzqx9yQzAJtaj-sG8yJ
+      User-Agent:
+      - python-gitlab/1.13.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1
+  response:
+    body:
+      string: '{"id":1,"description":"","name":"patchlab_test","name_with_namespace":"Administrator
+        / patchlab_test","path":"patchlab_test","path_with_namespace":"root/patchlab_test","created_at":"2019-11-13T21:01:20.862Z","default_branch":"master","tag_list":[],"ssh_url_to_repo":"ssh://git@gitlab:2222/root/patchlab_test.git","http_url_to_repo":"https://gitlab/root/patchlab_test.git","web_url":"https://gitlab/root/patchlab_test","readme_url":"https://gitlab/root/patchlab_test/blob/master/README","avatar_url":null,"star_count":0,"forks_count":0,"last_activity_at":"2019-12-04T16:08:09.636Z","namespace":{"id":1,"name":"Administrator","path":"root","kind":"user","full_path":"root","parent_id":null,"avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"_links":{"self":"https://gitlab/api/v4/projects/1","issues":"https://gitlab/api/v4/projects/1/issues","merge_requests":"https://gitlab/api/v4/projects/1/merge_requests","repo_branches":"https://gitlab/api/v4/projects/1/repository/branches","labels":"https://gitlab/api/v4/projects/1/labels","events":"https://gitlab/api/v4/projects/1/events","members":"https://gitlab/api/v4/projects/1/members"},"empty_repo":false,"archived":false,"visibility":"public","owner":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"resolve_outdated_diff_discussions":false,"container_registry_enabled":true,"issues_enabled":true,"merge_requests_enabled":true,"wiki_enabled":true,"jobs_enabled":true,"snippets_enabled":true,"issues_access_level":"enabled","repository_access_level":"enabled","merge_requests_access_level":"enabled","wiki_access_level":"enabled","builds_access_level":"enabled","snippets_access_level":"enabled","shared_runners_enabled":true,"lfs_enabled":true,"creator_id":1,"import_status":"none","import_error":null,"open_issues_count":0,"runners_token":"qfpvdtS5FUcPjQTRLRuT","ci_default_git_depth":50,"public_jobs":true,"build_git_strategy":"fetch","build_timeout":3600,"auto_cancel_pending_pipelines":"enabled","build_coverage_regex":null,"ci_config_path":null,"shared_with_groups":[],"only_allow_merge_if_pipeline_succeeds":false,"request_access_enabled":true,"only_allow_merge_if_all_discussions_are_resolved":false,"printing_merge_request_link_enabled":true,"merge_method":"merge","auto_devops_enabled":false,"auto_devops_deploy_strategy":"continuous","permissions":{"project_access":{"access_level":40,"notification_level":3},"group_access":null}}'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2634'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 04 Dec 2019 16:18:55 GMT
+      Etag:
+      - W/"5fdfbde04470c98a3c298bd3c118ca74"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - hQBq5aDyJg6
+      X-Runtime:
+      - '0.035063'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - xTzqx9yQzAJtaj-sG8yJ
+      User-Agent:
+      - python-gitlab/1.13.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1/merge_requests?state=opened
+  response:
+    body:
+      string: '[{"id":6,"iid":6,"project_id":1,"title":"Add a merge request from email","description":"","state":"opened","created_at":"2019-12-04T16:14:30.455Z","updated_at":"2019-12-04T16:14:30.455Z","merged_by":null,"merged_at":null,"closed_by":null,"closed_at":null,"target_branch":"master","source_branch":"from-email","user_notes_count":0,"upvotes":0,"downvotes":0,"assignee":null,"author":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"assignees":[],"source_project_id":1,"target_project_id":1,"labels":["From
+        email"],"work_in_progress":false,"milestone":null,"merge_when_pipeline_succeeds":false,"merge_status":"can_be_merged","sha":"80ce924ca437ce61eb703f0b6f1fee3accf0fffe","merge_commit_sha":null,"discussion_locked":null,"should_remove_source_branch":null,"force_remove_source_branch":false,"reference":"!6","web_url":"https://gitlab/root/patchlab_test/merge_requests/6","time_stats":{"time_estimate":0,"total_time_spent":0,"human_time_estimate":null,"human_total_time_spent":null},"squash":false,"task_completion_status":{"count":0,"completed_count":0}},{"id":5,"iid":5,"project_id":1,"title":"WIP:
+        Make a work-in-progress MR","description":"","state":"opened","created_at":"2019-12-04T16:13:05.251Z","updated_at":"2019-12-04T16:13:05.251Z","merged_by":null,"merged_at":null,"closed_by":null,"closed_at":null,"target_branch":"master","source_branch":"work-in-progress","user_notes_count":0,"upvotes":0,"downvotes":0,"assignee":null,"author":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"assignees":[],"source_project_id":1,"target_project_id":1,"labels":[],"work_in_progress":true,"milestone":null,"merge_when_pipeline_succeeds":false,"merge_status":"can_be_merged","sha":"af704a979e47bbdff94845f1efbf9bf3e9633d80","merge_commit_sha":null,"discussion_locked":null,"should_remove_source_branch":null,"force_remove_source_branch":false,"reference":"!5","web_url":"https://gitlab/root/patchlab_test/merge_requests/5","time_stats":{"time_estimate":0,"total_time_spent":0,"human_time_estimate":null,"human_total_time_spent":null},"squash":false,"task_completion_status":{"count":0,"completed_count":0}},{"id":4,"iid":4,"project_id":1,"title":"Add
+        a conflicting file for an unmergable request.","description":"","state":"opened","created_at":"2019-12-04T16:11:09.896Z","updated_at":"2019-12-04T16:11:09.896Z","merged_by":null,"merged_at":null,"closed_by":null,"closed_at":null,"target_branch":"master","source_branch":"conflict","user_notes_count":0,"upvotes":0,"downvotes":0,"assignee":null,"author":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"assignees":[],"source_project_id":1,"target_project_id":1,"labels":[],"work_in_progress":false,"milestone":null,"merge_when_pipeline_succeeds":false,"merge_status":"cannot_be_merged","sha":"04ed68845489637bfc577608c18912b84f318cd9","merge_commit_sha":null,"discussion_locked":null,"should_remove_source_branch":null,"force_remove_source_branch":false,"reference":"!4","web_url":"https://gitlab/root/patchlab_test/merge_requests/4","time_stats":{"time_estimate":0,"total_time_spent":0,"human_time_estimate":null,"human_total_time_spent":null},"squash":false,"task_completion_status":{"count":0,"completed_count":0}}]'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3630'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 04 Dec 2019 16:18:55 GMT
+      Etag:
+      - W/"2a51bf74a086c924d9ddf969b54c9b08"
+      Link:
+      - <https://gitlab/api/v4/projects/1/merge_requests?id=1&order_by=created_at&page=1&per_page=20&sort=desc&state=opened>;
+        rel="first", <https://gitlab/api/v4/projects/1/merge_requests?id=1&order_by=created_at&page=1&per_page=20&sort=desc&state=opened>;
+        rel="last"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Next-Page:
+      - ''
+      X-Page:
+      - '1'
+      X-Per-Page:
+      - '20'
+      X-Prev-Page:
+      - ''
+      X-Request-Id:
+      - 67Q6KXQLZw3
+      X-Runtime:
+      - '0.055176'
+      X-Total:
+      - '3'
+      X-Total-Pages:
+      - '1'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - xTzqx9yQzAJtaj-sG8yJ
+      User-Agent:
+      - python-gitlab/1.13.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1/merge_requests/6/pipelines
+  response:
+    body:
+      string: '[{"id":29,"sha":"80ce924ca437ce61eb703f0b6f1fee3accf0fffe","ref":"from-email","status":"success","created_at":"2019-12-04T16:14:17.111Z","updated_at":"2019-12-04T16:14:19.227Z","web_url":"https://gitlab/root/patchlab_test/pipelines/29"}]'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '237'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 04 Dec 2019 16:18:55 GMT
+      Etag:
+      - W/"2f3e1e6e9310273eeae9327d6c596dbc"
+      Link:
+      - <https://gitlab/api/v4/projects/1/merge_requests/6/pipelines?id=1&merge_request_iid=6&page=1&per_page=>;
+        rel="first", <https://gitlab/api/v4/projects/1/merge_requests/6/pipelines?id=1&merge_request_iid=6&page=1&per_page=>;
+        rel="last"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Next-Page:
+      - ''
+      X-Page:
+      - '1'
+      X-Per-Page:
+      - '20'
+      X-Prev-Page:
+      - ''
+      X-Request-Id:
+      - t8rmtzq1ova
+      X-Runtime:
+      - '0.030771'
+      X-Total:
+      - '1'
+      X-Total-Pages:
+      - '1'
+    status:
+      code: 200
+      message: OK
+version: 1
