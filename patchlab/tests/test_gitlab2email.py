@@ -156,6 +156,43 @@ class PrepareEmailsTests(BaseTestCase):
         self.assertEqual(1, len(emails))
         self.assertEqual(BIG_EMAIL, emails[0].message().as_string())
 
+    def test_multiline_patch_subject(self):
+        """
+        Assert patches with multi-line subjects are sanitized to have single-line
+        subjects. Multi-line subjects allow malicious patches to inject arbitrary
+        headers into the email.
+        """
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(1)
+
+        emails = gitlab2email._prepare_emails(
+            gitlab, self.forge, project, merge_request
+        )
+
+        self.assertEqual(1, len(emails[0].message()["Subject"].splitlines()))
+
+    def test_multiline_cover_letter_subject(self):
+        """
+        Assert patches with multi-line subjects are sanitized to have single-line
+        subjects in the cover letter.
+        """
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(2)
+
+        emails = gitlab2email._prepare_emails(
+            gitlab, self.forge, project, merge_request
+        )
+
+        self.assertEqual(3, len(emails))
+        for email in emails:
+            self.assertEqual(1, len(email.message()["Subject"].splitlines()))
+
 
 @mock.patch(
     "patchlab.gitlab2email.email_utils.formatdate",

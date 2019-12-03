@@ -113,8 +113,9 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             f"From: {merge_request.author['username']} on {git_forge.host}\n\n"
             f"{merge_request.description}"
         )
+        sanitized_subject = " ".join(merge_request.title.splitlines())
         cover_letter = EmailMessage(
-            subject=f"[{branch.subject_prefix} PATCH 0/{num_commits}] {merge_request.title}",
+            subject=f"[{branch.subject_prefix} PATCH 0/{num_commits}] {sanitized_subject}",
             body=body,
             to=[git_forge.project.listemail],
             headers=headers,
@@ -141,16 +142,9 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         response.raise_for_status()
         patch = message_from_string(response.text)
 
-        match = PREFIX_RE.match(patch["Subject"])
-        if match:
-            old_subject = patch["Subject"][match.span()[1] :]
-        else:
-            old_subject = " " + patch["Subject"].strip()
-        patch_prefix = f"[{branch.subject_prefix} PATCH"
-        if num_commits > 1:
-            patch_prefix += f" {str(i)}/{num_commits}"
-        patch_prefix += "]"
-        subject = patch_prefix + old_subject
+        patch_num = "" if len(commits) == 1 else f" {str(i)}/{num_commits}"
+        sanitized_patch_title = " ".join(commit.title.splitlines())
+        subject = f"[{branch.subject_prefix} PATCH{patch_num}] {sanitized_patch_title}"
         patch_author = patch["From"]
 
         headers = {
