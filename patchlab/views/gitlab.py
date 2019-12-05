@@ -58,12 +58,6 @@ def merge_request(payload: dict) -> http.HttpResponse:
     The request body is a JSON document documented at
     https://docs.gitlab.com/ce/user/project/integrations/webhooks.html
     """
-    try:
-        if any([label["title"] == "From email" for label in payload["labels"]]):
-            return http.HttpResponse("Let's not loop infinitely")
-    except KeyError:
-        return http.HttpResponseBadRequest("Payload expected to have labels")
-
     if payload["object_attributes"]["action"] not in ("open", "reopen"):
         return http.HttpResponse("Skipping event as merge request has not been opened")
 
