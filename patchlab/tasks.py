@@ -89,5 +89,12 @@ def merge_request_hook(gitlab_host: str, project_id: int, merge_id: int) -> None
 
 
 @shared_task
-def email_comment(comment):
-    pass
+def email_comment(gitlab_host: str, project_id: int, merge_id: int, note_id: int):
+    gitlab = gitlab_module.Gitlab.from_config(gitlab_host)
+    try:
+        gitlab2email.email_comment(gitlab, project_id, merge_id, note_id)
+    except Exception as e:
+        _log.warning(
+            "Failed to email merge request from merge_request_hook, retrying in 1 minute"
+        )
+        raise merge_request_hook.retry(exc=e, throw=False, countdown=60)

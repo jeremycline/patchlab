@@ -110,12 +110,15 @@ def comment(payload: dict) -> http.HttpResponse:
     https://docs.gitlab.com/ce/user/project/integrations/webhooks.html
     """
     comment_type = payload["object_attributes"]["noteable_type"]
-    if comment_type == "MergeRequest":
-        pass
-    elif comment_type == "Commit":
-        pass
+    if comment_type != "MergeRequest":
+        return http.HttpResponse(f"Skipping comment as type is {comment_type}, not MergeRequest")
 
-    email_comment.apply_async((payload,))
+    host = urllib.parse.urlsplit(payload["project"]["web_url"]).hostname
+    project_id = payload["project"]["id"]
+    merge_id = payload["merge_request"]["iid"]
+    note_id = payload["object_attributes"]["id"]
+
+    email_comment.apply_async((host, project_id, merge_id, note_id))
     return http.HttpResponse("Success!")
 
 

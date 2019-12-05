@@ -121,6 +121,17 @@ def _reroll(git_forge, merge_request):
     return version, in_reply_to
 
 
+def email_comment(
+    gitlab: gitlab_module.Gitlab, forge_id: int, merge_id: int, note_id: int
+) -> None:
+    project = gitlab.projects.get(forge_id)
+    merge_request = project.mergerequests.get(merge_id)
+    note = merge_request.notes.get(note_id)
+
+    # TODO Map the note back to a specific patch or coverletter, format it neatly,
+    # include link to the Gitlab comment for clarity and awareness.
+
+
 def _prepare_emails(gitlab, git_forge, project, merge_request):
     """Prepare a set of emails that represent the given merge request."""
     try:
