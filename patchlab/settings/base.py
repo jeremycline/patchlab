@@ -33,6 +33,14 @@ PATCHLAB_MAX_EMAILS = 25
 #: <forge-host>-<forge-id>.
 PATCHLAB_REPO_DIR = "/var/lib/patchlab"
 
+#: If true, Patchlab will bridge patch series discovered by Patchwork to Gitlab
+#: merge requests.
+PATCHLAB_EMAIL_TO_GITLAB_MR = True
+
+#: If true, Patchlab will bridge emailed comments to patch series in addition
+#: to patches.
+PATCHLAB_EMAIL_TO_GITLAB_COMMENT = True
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

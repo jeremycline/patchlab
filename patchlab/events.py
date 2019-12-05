@@ -2,6 +2,7 @@
 import email
 import logging
 
+from django.conf import settings
 from django.db.models.signals import post_save
 from patchwork.models import Comment, Patch
 
@@ -51,7 +52,10 @@ def comment_event_handler(sender, **kwargs):
         _log.exception("Failed to dispatch task for comment %d", kwargs["instance"].id)
 
 
-post_save.connect(patch_event_handler, sender=Patch, dispatch_uid="patchlab_mr")
-post_save.connect(
-    comment_event_handler, sender=Comment, dispatch_uid="patchlab_comments"
-)
+if settings.PATCHLAB_EMAIL_TO_GITLAB_MR:
+    post_save.connect(patch_event_handler, sender=Patch, dispatch_uid="patchlab_mr")
+
+if settings.PATCHLAB_EMAIL_TO_GITLAB_COMMENT:
+    post_save.connect(
+        comment_event_handler, sender=Comment, dispatch_uid="patchlab_comments"
+    )
