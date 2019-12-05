@@ -173,7 +173,9 @@ Acked-by: Jeremy Cline <jcline@redhat.com>
         parse_mail(message_from_string(comment), "patchlab.example.com")
         comment = pw_models.Comment.objects.first()
         models.BridgedSubmission.objects.create(
-            submission=comment.submission, merge_request=2,
+            git_forge=models.GitForge.objects.get(pk=1),
+            submission=comment.submission,
+            merge_request=2,
         )
 
         merge_request, note = bridge.submit_gitlab_comment(self.gitlab, comment)
@@ -211,7 +213,9 @@ Nacked-by: Jeremy Cline <jcline@redhat.com>
         parse_mail(message_from_string(comment), "patchlab.example.com")
         comment = pw_models.Comment.objects.first()
         models.BridgedSubmission.objects.create(
-            submission=comment.submission, merge_request=2,
+            git_forge=models.GitForge.objects.get(pk=1),
+            submission=comment.submission,
+            merge_request=2,
         )
 
         merge_request, note = bridge.submit_gitlab_comment(self.gitlab, comment)

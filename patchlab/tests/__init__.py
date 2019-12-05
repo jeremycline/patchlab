@@ -42,6 +42,7 @@ Message-ID: <4@localhost.localdomain>
 X-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/1
 X-Patchlab-Commit: a958a0dff5e3c433eb99bc5f18cbcfad77433b0d
+X-Patchlab-Series-Version: 1
 
 From: Jeremy Cline <jcline@redhat.com>
 
@@ -77,6 +78,7 @@ Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <1@localhost.localdomain>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
+X-Patchlab-Series-Version: 1
 
 From: root on gitlab.example.com
 
@@ -93,6 +95,7 @@ Message-ID: <2@localhost.localdomain>
 X-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
 X-Patchlab-Commit: 5c9b066a8bc9eed0e8d7ccd392bc8f77c42532f0
+X-Patchlab-Series-Version: 1
 In-Reply-To: <1@localhost.localdomain>
 
 From: Jeremy Cline <jcline@redhat.com>
@@ -129,6 +132,7 @@ Message-ID: <4@localhost.localdomain>
 X-Patchlab-Patch-Author: Jeremy Cline <jcline@redhat.com>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
 X-Patchlab-Commit: c321c86ee75491f4bc0b0b0e368f71eff88fa91c
+X-Patchlab-Series-Version: 1
 In-Reply-To: <1@localhost.localdomain>
 
 From: Jeremy Cline <jcline@redhat.com>
@@ -161,6 +165,7 @@ Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <4@localhost.localdomain>
 X-Patchlab-Merge-Request: https://gitlab/root/kernel/merge_requests/2
+X-Patchlab-Series-Version: 1
 
 From: root on gitlab.example.com
 

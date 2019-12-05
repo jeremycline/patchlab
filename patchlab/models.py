@@ -28,6 +28,13 @@ class BridgedSubmission(models.Model):
     )
     merge_request = models.IntegerField(null=False, blank=False)
     commit = models.CharField(max_length=128, null=True, blank=True)
+    series_version = models.IntegerField(null=True, blank=True)
+    git_forge = models.ForeignKey("GitForge", on_delete=models.CASCADE)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["merge_request", "git_forge"]),
+        ]
 
 
 class GitForge(models.Model):

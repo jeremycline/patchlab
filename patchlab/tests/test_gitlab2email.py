@@ -33,6 +33,75 @@ class EmailMergeRequestTests(BaseTestCase):
         )
 
 
+class RerollTests(BaseTestCase):
+    """Tests for the :func:`gitlab2email._reroll` function."""
+
+    def test_no_prior_submissions(self):
+        """Assert if there are no prior submissions, the version is 1."""
+        git_forge = models.GitForge.objects.get(pk=1)
+        merge_request = mock.Mock(iid=42)
+
+        version, in_reply_to = gitlab2email._reroll(git_forge, merge_request)
+
+        self.assertEqual(1, version)
+        self.assertIsNone(in_reply_to)
+
+    def test_missing_series_version(self):
+        """Assert if there the series_version is null the version is 1."""
+        git_forge = models.GitForge.objects.get(pk=1)
+        merge_request = mock.Mock(iid=42)
+        submission = pw_models.Submission.objects.first()
+        models.BridgedSubmission.objects.create(
+            git_forge=git_forge, merge_request=42, submission=submission
+        )
+
+        version, in_reply_to = gitlab2email._reroll(git_forge, merge_request)
+
+        self.assertEqual(1, version)
+        self.assertEqual(submission.msgid, in_reply_to)
+
+    def test_v2_submission(self):
+        """Assert the series version is +1 the previous version."""
+        git_forge = models.GitForge.objects.get(pk=1)
+        merge_request = mock.Mock(iid=42)
+        submission = pw_models.Submission.objects.first()
+        models.BridgedSubmission.objects.create(
+            git_forge=git_forge,
+            merge_request=42,
+            submission=submission,
+            series_version=1,
+        )
+
+        version, in_reply_to = gitlab2email._reroll(git_forge, merge_request)
+
+        self.assertEqual(2, version)
+        self.assertEqual(submission.msgid, in_reply_to)
+
+    def test_v3_submission(self):
+        """Assert the highest series version is selected as the reply_to."""
+        git_forge = models.GitForge.objects.get(pk=1)
+        merge_request = mock.Mock(iid=42)
+        submission1 = pw_models.Submission.objects.get(pk=1)
+        submission2 = pw_models.Submission.objects.get(pk=2)
+        models.BridgedSubmission.objects.create(
+            git_forge=git_forge,
+            merge_request=42,
+            submission=submission1,
+            series_version=1,
+        )
+        models.BridgedSubmission.objects.create(
+            git_forge=git_forge,
+            merge_request=42,
+            submission=submission2,
+            series_version=2,
+        )
+
+        version, in_reply_to = gitlab2email._reroll(git_forge, merge_request)
+
+        self.assertEqual(3, version)
+        self.assertEqual(submission2.msgid, in_reply_to)
+
+
 @mock.patch(
     "patchlab.gitlab2email.email_utils.formatdate",
     mock.Mock(return_value="Mon, 04 Nov 2019 23:00:00 -0000"),

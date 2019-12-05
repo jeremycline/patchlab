@@ -155,6 +155,7 @@ def open_merge_request(
 
     if series.cover_letter:
         BridgedSubmission(
+            git_forge=patchwork_project.git_forge,
             submission=series.cover_letter.submission_ptr,
             merge_request=merge_request.id,
         ).save()
@@ -163,6 +164,7 @@ def open_merge_request(
         series.patches.order_by("number").all(), merge_request.commits()
     ):
         bridged_submission = BridgedSubmission(
+            git_forge=patchwork_project.git_forge,
             submission=patch.submission_ptr,
             merge_request=merge_request.id,
             commit=commit.id,

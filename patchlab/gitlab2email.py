@@ -102,6 +102,25 @@ def email_merge_request(
                 raise e
 
 
+def _reroll(git_forge, merge_request):
+    """Determine the patch reroll count based on previous submissions."""
+    prior_submissions = BridgedSubmission.objects.filter(
+        git_forge=git_forge, merge_request=merge_request.iid
+    )
+    latest_submission = prior_submissions.order_by("-series_version").first()
+    if latest_submission is None:
+        version = 1
+        in_reply_to = None
+    else:
+        if latest_submission.series_version:
+            version = latest_submission.series_version + 1
+        else:
+            version = 1
+        in_reply_to = latest_submission.submission.msgid
+
+    return version, in_reply_to
+
+
 def _prepare_emails(gitlab, git_forge, project, merge_request):
     """Prepare a set of emails that represent the given merge request."""
     try:
@@ -118,6 +137,8 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
 
     commits = list(reversed(list(merge_request.commits())))
     num_commits = len(commits)
+    series_version, in_reply_to = _reroll(git_forge, merge_request)
+    version_prefix = f"v{series_version}" if series_version > 1 else ""
 
     emails = []
     if num_commits > 1:
@@ -126,14 +147,20 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             "Date": email_utils.formatdate(localtime=settings.EMAIL_USE_LOCALTIME),
             "Message-ID": email_utils.make_msgid(domain=DNS_NAME),
             "X-Patchlab-Merge-Request": f"{merge_request.web_url}",
+            "X-Patchlab-Series-Version": series_version,
         }
+        if in_reply_to:
+            headers["In-Reply-To"] = in_reply_to
         body = (
             f"From: {merge_request.author['username']} on {git_forge.host}\n\n"
             f"{merge_request.description}"
         )
-        sanitized_subject = " ".join(merge_request.title.splitlines())
+        subject = (
+            f"[{branch.subject_prefix} PATCH{version_prefix} 0/{num_commits}] "
+            f"{' '.join(merge_request.title.splitlines())}"  # No multi-line headers allowed
+        )
         cover_letter = EmailMessage(
-            subject=f"[{branch.subject_prefix} PATCH 0/{num_commits}] {sanitized_subject}",
+            subject=subject,
             body=body,
             to=[git_forge.project.listemail],
             headers=headers,
@@ -149,9 +176,9 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             )
             return [cover_letter]
 
+        in_reply_to = headers["Message-ID"]
         emails.append(cover_letter)
 
-    in_reply_to = emails[0].extra_headers["Message-ID"] if emails else None
     for i, commit in enumerate(commits, 1):
         # This currently only works for public projects; authenticating with a
         # token does not work.
@@ -162,7 +189,10 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
 
         patch_num = "" if len(commits) == 1 else f" {str(i)}/{num_commits}"
         sanitized_patch_title = " ".join(commit.title.splitlines())
-        subject = f"[{branch.subject_prefix} PATCH{patch_num}] {sanitized_patch_title}"
+        subject = (
+            f"[{branch.subject_prefix} PATCH{version_prefix}{patch_num}] "
+            f"{sanitized_patch_title}"
+        )
         patch_author = patch["From"]
 
         headers = {
@@ -171,6 +201,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             "X-Patchlab-Patch-Author": patch_author,
             "X-Patchlab-Merge-Request": f"{merge_request.web_url}",
             "X-Patchlab-Commit": f"{commit.id}",
+            "X-Patchlab-Series-Version": series_version,
         }
         if in_reply_to:
             headers["In-Reply-To"] = in_reply_to
@@ -212,8 +243,10 @@ def _record_bridging(listid: str, merge_id: int, email: EmailMessage) -> None:
     submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
     bridged_submission = BridgedSubmission(
         submission=submission,
+        git_forge=submission.project.git_forge,
         merge_request=merge_id,
         commit=email.extra_headers.get("X-Patchlab-Commit"),
+        series_version=email.extra_headers.get("X-Patchlab-Series-Version", 1),
     )
     bridged_submission.save()
     return bridged_submission
