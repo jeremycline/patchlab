@@ -15,6 +15,7 @@ Django
 .. autodata:: patchlab.settings.base.PATCHLAB_REPO_DIR
 .. autodata:: patchlab.settings.base.PATCHLAB_EMAIL_TO_GITLAB_MR
 .. autodata:: patchlab.settings.base.PATCHLAB_EMAIL_TO_GITLAB_COMMENT
+.. autodata:: patchlab.settings.base.PATCHLAB_IGNORE_GITLAB_LABELS
 
 
 Git

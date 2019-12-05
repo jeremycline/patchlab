@@ -1,11 +1,36 @@
 from unittest import mock
 
+from django.core import mail
 from django.test import override_settings
 from patchwork import models as pw_models
 import gitlab as gitlab_module
 
 from patchlab import gitlab2email, models
 from . import BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR, BaseTestCase
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class EmailMergeRequestTests(BaseTestCase):
+    def setUp(self):
+        super().setUp()
+        try:
+            mail.outbox.clear()
+        except AttributeError:
+            pass
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_label_in_ignored_labels(self, mock_log):
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_merge_request(gitlab, 1, 8)
+
+        mock_log.info.assert_called_once_with(
+            "Not emailing %r as it is labeled with the %s label, which is ignored.",
+            mock.ANY,
+            "🛑 Do Not Email",
+        )
 
 
 @mock.patch(

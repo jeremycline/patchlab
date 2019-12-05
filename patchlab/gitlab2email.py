@@ -75,6 +75,14 @@ def email_merge_request(
     if "From email" in merge_request.labels:
         _log.info("Not emailing %r as it's from email to start with", merge_request)
         return
+    for label in settings.PATCHLAB_IGNORE_GITLAB_LABELS:
+        if label in merge_request.labels:
+            _log.info(
+                "Not emailing %r as it is labeled with the %s label, which is ignored.",
+                merge_request,
+                label,
+            )
+            return
 
     emails = _prepare_emails(gitlab, git_forge, project, merge_request)
     with get_connection(fail_silently=False) as conn:

@@ -41,6 +41,9 @@ PATCHLAB_EMAIL_TO_GITLAB_MR = True
 #: to patches.
 PATCHLAB_EMAIL_TO_GITLAB_COMMENT = True
 
+#: A list of labels that, if any are present on a merge request, are ignored.
+PATCHLAB_IGNORE_GITLAB_LABELS = ["🛑 Do Not Email"]
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
