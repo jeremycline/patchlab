@@ -4,6 +4,56 @@ Release Notes
 
 .. towncrier release notes start
 
+v0.3.0 (2019-12-06)
+===================
+
+This update contains a database migration. Be sure to run it with
+``django-admin migrate`` before restarting the services.
+
+Features
+--------
+
+* Retry merge request creation tasks on failure.
+
+* Add the ability to bridge emailed comments to merge requests. Emails
+  containing Acked-by/Nacked-by/Reviewed-by tags cause the merge request
+  to be automatically labeled as such.
+
+* Add a web hook handler for pipeline events. It's very similar to the merge
+  request event handler, except it only emails out the merge request when the
+  pipeline succeeds.
+
+* Add configuration options to turn off pieces of the email-to-Gitlab bridge.
+  Consult the configuration documentation for details.
+
+* Add a configurable label that can be applied to merge requests that should
+  not be bridged to email. The default is "🛑 Do Not Email"
+
+* When a merge request is updated (new commits, force push, or if the pipeline
+  is rerun for any other reason) a series is re-emailed as a re-roll. The
+  series version is incremented and the emails are sent in response to the
+  previous series.
+
+Bug Fixes
+---------
+
+* Use the merge request iid instead of the id so Patchlab works with Gitlab
+  instances with more than one project.
+
+* Don't try to retrieve the Merge Request author's email and crash if it's not
+  accessible. Most users hide their email and it's not required to email the
+  patches to the list in any case.
+
+* The documentation claimed the MULTILINE and IGNORECASE flags were used when
+  matching Git forge branches via the subject prefix, but they were not. This
+  has been fixed.
+
+* The series2gitlab management comment now works with Celery.
+
+* Filter out newlines from patch subjects in the Gitlab-to-email bridge which
+  caused the task to crash unexpectedly due to Django security features.
+
+
 v0.2.0 (2019-11-20)
 ===================
 
