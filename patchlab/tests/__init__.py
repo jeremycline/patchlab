@@ -175,7 +175,8 @@ Note:
 
 The patch series is too large to sent by email.
 
-Reviewing locally, set up your repository to fetch from the GitLab remote:
+To review the series locally, set up your repository to fetch from the GitLab
+remote:
 
   $ git remote add gitlab https://gitlab/root/kernel.git
   $ git config remote.gitlab.fetch '+refs/merge-requests/*/head:refs/remotes/gitlab/merge-requests/*'

@@ -31,7 +31,8 @@ Note:
 
 The patch series is too large to sent by email.
 
-Reviewing locally, set up your repository to fetch from the GitLab remote:
+To review the series locally, set up your repository to fetch from the GitLab
+remote:
 
   $ git remote add gitlab {remote_url}
   $ git config remote.gitlab.fetch '+refs/merge-requests/*/head:refs/remotes/gitlab/merge-requests/*'
@@ -169,9 +170,9 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
 
         if num_commits > settings.PATCHLAB_MAX_EMAILS:
             cover_letter.body = BIG_EMAIL_TEMPLATE.format(
-                description=body,
+                description=body or "No description provided for merge request.",
                 remote_url=f"{project.web_url}.git",
-                merge_id=merge_request.id,
+                merge_id=merge_request.iid,
                 merge_url=merge_request.web_url,
             )
             return [cover_letter]
