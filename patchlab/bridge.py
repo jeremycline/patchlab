@@ -157,7 +157,7 @@ def open_merge_request(
         BridgedSubmission(
             git_forge=patchwork_project.git_forge,
             submission=series.cover_letter.submission_ptr,
-            merge_request=merge_request.id,
+            merge_request=merge_request.iid,
         ).save()
 
     for patch, commit in zip(
@@ -166,7 +166,7 @@ def open_merge_request(
         bridged_submission = BridgedSubmission(
             git_forge=patchwork_project.git_forge,
             submission=patch.submission_ptr,
-            merge_request=merge_request.id,
+            merge_request=merge_request.iid,
             commit=commit.id,
         )
         bridged_submission.save()
