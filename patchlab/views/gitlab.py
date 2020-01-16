@@ -58,8 +58,32 @@ def merge_request(payload: dict) -> http.HttpResponse:
     The request body is a JSON document documented at
     https://docs.gitlab.com/ce/user/project/integrations/webhooks.html
     """
-    if payload["object_attributes"]["action"] not in ("open", "reopen"):
-        return http.HttpResponse("Skipping event as merge request has not been opened")
+    if payload["object_attributes"]["action"] not in ("open", "reopen", "update"):
+        _log.info(
+            "Ignoring merge request web hook since its action is %s",
+            payload["object_attributes"]["action"],
+        )
+        return http.HttpResponse(
+            "Skipping event as merge request has not been opened or updated"
+        )
+
+    # GitLab web hooks are not very clearly documented and keys are not always
+    # present. It *seems* that if "oldrev" is present the merge request got updated
+    # code-wise (additional commits, a force push) in which case we want to send
+    # out a new revision.
+    if (
+        payload["object_attributes"]["action"] == "update"
+        and "oldrev" not in payload["object_attributes"]
+    ):
+        _log.info(
+            "A merge request web hook arrived with the 'update' action and without "
+            "an 'oldrev' key so it is being skipped. If you believe this should have "
+            "sent an email, file a bug. The 'oldrev' key is undocumented and I'm "
+            "totally guessing at the meaning of fields in this web hook. Sorry!"
+        )
+        return http.HttpResponse(
+            "Skipping event as merge request hook payload is missing 'oldrev'"
+        )
 
     project_id = payload["project"]["id"]
     merge_id = payload["object_attributes"]["iid"]

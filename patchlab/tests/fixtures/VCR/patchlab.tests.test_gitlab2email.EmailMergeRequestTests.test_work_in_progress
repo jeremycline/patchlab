@@ -1,0 +1,146 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - xTzqx9yQzAJtaj-sG8yJ
+      User-Agent:
+      - python-gitlab/1.13.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1
+  response:
+    body:
+      string: '{"id":1,"description":"","name":"patchlab_test","name_with_namespace":"Administrator
+        / patchlab_test","path":"patchlab_test","path_with_namespace":"root/patchlab_test","created_at":"2019-11-13T21:01:20.862Z","default_branch":"master","tag_list":[],"ssh_url_to_repo":"ssh://git@gitlab:2222/root/patchlab_test.git","http_url_to_repo":"https://gitlab/root/patchlab_test.git","web_url":"https://gitlab/root/patchlab_test","readme_url":"https://gitlab/root/patchlab_test/blob/master/README","avatar_url":null,"star_count":0,"forks_count":0,"last_activity_at":"2019-12-05T20:13:43.574Z","namespace":{"id":1,"name":"Administrator","path":"root","kind":"user","full_path":"root","parent_id":null,"avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"_links":{"self":"https://gitlab/api/v4/projects/1","issues":"https://gitlab/api/v4/projects/1/issues","merge_requests":"https://gitlab/api/v4/projects/1/merge_requests","repo_branches":"https://gitlab/api/v4/projects/1/repository/branches","labels":"https://gitlab/api/v4/projects/1/labels","events":"https://gitlab/api/v4/projects/1/events","members":"https://gitlab/api/v4/projects/1/members"},"empty_repo":false,"archived":false,"visibility":"public","owner":{"id":1,"name":"Administrator","username":"root","state":"active","avatar_url":"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\u0026d=identicon","web_url":"https://gitlab/root"},"resolve_outdated_diff_discussions":false,"container_registry_enabled":true,"issues_enabled":true,"merge_requests_enabled":true,"wiki_enabled":true,"jobs_enabled":true,"snippets_enabled":true,"issues_access_level":"enabled","repository_access_level":"enabled","merge_requests_access_level":"enabled","wiki_access_level":"enabled","builds_access_level":"enabled","snippets_access_level":"enabled","shared_runners_enabled":true,"lfs_enabled":true,"creator_id":1,"import_status":"none","import_error":null,"open_issues_count":0,"runners_token":"qfpvdtS5FUcPjQTRLRuT","ci_default_git_depth":50,"public_jobs":true,"build_git_strategy":"fetch","build_timeout":3600,"auto_cancel_pending_pipelines":"enabled","build_coverage_regex":null,"ci_config_path":null,"shared_with_groups":[],"only_allow_merge_if_pipeline_succeeds":false,"request_access_enabled":true,"only_allow_merge_if_all_discussions_are_resolved":false,"printing_merge_request_link_enabled":true,"merge_method":"merge","auto_devops_enabled":false,"auto_devops_deploy_strategy":"continuous","permissions":{"project_access":{"access_level":40,"notification_level":3},"group_access":null}}'
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2634'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Dec 2019 21:12:33 GMT
+      Etag:
+      - W/"67221ed6556908ba594fae7074f04000"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - seMhwgL8mq1
+      X-Runtime:
+      - '0.029886'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-type:
+      - application/json
+      PRIVATE-TOKEN:
+      - xTzqx9yQzAJtaj-sG8yJ
+      User-Agent:
+      - python-gitlab/1.13.0
+    method: GET
+    uri: https://gitlab/api/v4/projects/1/merge_requests/8
+  response:
+    body:
+      string: "{\"id\":8,\"iid\":8,\"project_id\":1,\"title\":\"Test a single patch\
+        \ reroll\",\"description\":\"This tests the reroll code.\",\"state\":\"opened\"\
+        ,\"created_at\":\"2019-12-05T15:27:12.373Z\",\"updated_at\":\"2019-12-05T21:11:56.979Z\"\
+        ,\"merged_by\":null,\"merged_at\":null,\"closed_by\":null,\"closed_at\":null,\"\
+        target_branch\":\"master\",\"source_branch\":\"reroll-test\",\"user_notes_count\"\
+        :0,\"upvotes\":0,\"downvotes\":0,\"assignee\":null,\"author\":{\"id\":1,\"\
+        name\":\"Administrator\",\"username\":\"root\",\"state\":\"active\",\"avatar_url\"\
+        :\"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\\\
+        u0026d=identicon\",\"web_url\":\"https://gitlab/root\"},\"assignees\":[],\"\
+        source_project_id\":1,\"target_project_id\":1,\"labels\":[],\
+        \"work_in_progress\":true,\"milestone\":null,\"merge_when_pipeline_succeeds\"\
+        :false,\"merge_status\":\"can_be_merged\",\"sha\":\"167a5b03a34da9651a0c6d2f8caeecf4d39b5c49\"\
+        ,\"merge_commit_sha\":null,\"discussion_locked\":null,\"should_remove_source_branch\"\
+        :null,\"force_remove_source_branch\":false,\"reference\":\"!8\",\"web_url\"\
+        :\"https://gitlab/root/patchlab_test/merge_requests/8\",\"time_stats\":{\"\
+        time_estimate\":0,\"total_time_spent\":0,\"human_time_estimate\":null,\"human_total_time_spent\"\
+        :null},\"squash\":false,\"task_completion_status\":{\"count\":0,\"completed_count\"\
+        :0},\"subscribed\":true,\"changes_count\":\"1\",\"latest_build_started_at\"\
+        :\"2019-12-05T15:41:14.532Z\",\"latest_build_finished_at\":\"2019-12-05T15:41:15.291Z\"\
+        ,\"first_deployed_to_production_at\":null,\"pipeline\":{\"id\":37,\"sha\"\
+        :\"167a5b03a34da9651a0c6d2f8caeecf4d39b5c49\",\"ref\":\"reroll-test\",\"status\"\
+        :\"success\",\"created_at\":\"2019-12-05T15:41:13.753Z\",\"updated_at\":\"\
+        2019-12-05T15:41:15.294Z\",\"web_url\":\"https://gitlab/root/patchlab_test/pipelines/37\"\
+        },\"head_pipeline\":{\"id\":37,\"sha\":\"167a5b03a34da9651a0c6d2f8caeecf4d39b5c49\"\
+        ,\"ref\":\"reroll-test\",\"status\":\"success\",\"created_at\":\"2019-12-05T15:41:13.753Z\"\
+        ,\"updated_at\":\"2019-12-05T15:41:15.294Z\",\"web_url\":\"https://gitlab/root/patchlab_test/pipelines/37\"\
+        ,\"before_sha\":\"10c2c1f7f8f85a26c7e24fdb594d0faac31c05b3\",\"tag\":false,\"\
+        yaml_errors\":null,\"user\":{\"id\":1,\"name\":\"Administrator\",\"username\"\
+        :\"root\",\"state\":\"active\",\"avatar_url\":\"https://secure.gravatar.com/avatar/e64c7d89f26bd1972efa854d13d7dd61?s=80\\\
+        u0026d=identicon\",\"web_url\":\"https://gitlab/root\"},\"started_at\":\"\
+        2019-12-05T15:41:14.532Z\",\"finished_at\":\"2019-12-05T15:41:15.291Z\",\"\
+        committed_at\":null,\"duration\":0,\"coverage\":null,\"detailed_status\":{\"\
+        icon\":\"status_success\",\"text\":\"passed\",\"label\":\"passed\",\"group\"\
+        :\"success\",\"tooltip\":\"passed\",\"has_details\":true,\"details_path\"\
+        :\"/root/patchlab_test/pipelines/37\",\"illustration\":null,\"favicon\":\"\
+        /assets/ci_favicons/favicon_status_success-8451333011eee8ce9f2ab25dc487fe24a8758c694827a582f17f42b0a90446a2.png\"\
+        }},\"diff_refs\":{\"base_sha\":\"bc757e97ba85664fa4d319b88557e12025830720\"\
+        ,\"head_sha\":\"167a5b03a34da9651a0c6d2f8caeecf4d39b5c49\",\"start_sha\":\"\
+        bc757e97ba85664fa4d319b88557e12025830720\"},\"merge_error\":null,\"user\"\
+        :{\"can_merge\":true}}"
+    headers:
+      Cache-Control:
+      - max-age=0, private, must-revalidate
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2901'
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 05 Dec 2019 21:12:33 GMT
+      Etag:
+      - W/"fe67f8615ff04b087525aabc72f470ae"
+      Referrer-Policy:
+      - strict-origin-when-cross-origin
+      Server:
+      - nginx
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Origin
+      X-Content-Type-Options:
+      - nosniff
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Request-Id:
+      - PLkwCwJh683
+      X-Runtime:
+      - '0.058919'
+    status:
+      code: 200
+      message: OK
+version: 1

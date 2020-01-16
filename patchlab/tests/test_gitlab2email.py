@@ -11,6 +11,11 @@ from . import BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR, BaseTestCase
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
 class EmailMergeRequestTests(BaseTestCase):
+    """
+    Tests for the :func:`gitlab2email.email_merge_request` function. Many tests
+    rely on the VCR recording to alter the outcome of the test.
+    """
+
     def setUp(self):
         super().setUp()
         try:
@@ -30,6 +35,30 @@ class EmailMergeRequestTests(BaseTestCase):
             "Not emailing %r as it is labeled with the %s label, which is ignored.",
             mock.ANY,
             "🛑 Do Not Email",
+        )
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_branch_unmergeable(self, mock_log):
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_merge_request(gitlab, 1, 8)
+
+        mock_log.info.assert_called_once_with(
+            "Not emailing %r because it can't be merged", mock.ANY
+        )
+
+    @mock.patch("patchlab.gitlab2email._log")
+    def test_work_in_progress(self, mock_log):
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="xTzqx9yQzAJtaj-sG8yJ", ssl_verify=False
+        )
+
+        gitlab2email.email_merge_request(gitlab, 1, 8)
+
+        mock_log.info.assert_called_once_with(
+            "Not emailing %r because it's a work in progress", mock.ANY
         )
 
 

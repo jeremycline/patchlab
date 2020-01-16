@@ -7,6 +7,7 @@ from email import message_from_string, utils as email_utils
 import logging
 import re
 import textwrap
+import time
 import urllib
 
 from django.conf import settings
@@ -67,23 +68,43 @@ def email_merge_request(
     project = gitlab.projects.get(forge_id)
     merge_request = project.mergerequests.get(merge_id)
 
-    if merge_request.work_in_progress:
-        _log.info("Not emailing %r because it's a work in progress", merge_request)
+    if _ignore(git_forge, merge_request):
         return
-    if merge_request.merge_status == "cannot_be_merged":
-        _log.info("Not emailing %r because it can't be merged", merge_request)
-        return
-    if "From email" in merge_request.labels:
-        _log.info("Not emailing %r as it's from email to start with", merge_request)
-        return
-    for label in settings.PATCHLAB_IGNORE_GITLAB_LABELS:
-        if label in merge_request.labels:
-            _log.info(
-                "Not emailing %r as it is labeled with the %s label, which is ignored.",
+
+    # This is all pretty hacky, but works for now. Just hang out until the
+    # pipeline is completed.
+    initial_head = merge_request.sha
+    if settings.PATCHLAB_PIPELINE_SUCCESS_REQUIRED:
+        for _ in range(settings.PATCHLAB_PIPELINE_MAX_WAIT):
+            if merge_request.head_pipeline["status"] not in ("failed", "success"):
+                _log.info(
+                    "Pipeline for %r is %s, checking back in a minute",
+                    merge_request,
+                    merge_request.head_pipeline["status"],
+                )
+                time.sleep(60)
+            else:
+                break
+            merge_request = project.mergerequests.get(merge_id)
+        else:
+            _log.warn(
+                "Pipeline failed to complete after %d minutes; not emailing %r",
+                settings.PATCHLAB_PIPELINE_WAIT,
                 merge_request,
-                label,
             )
             return
+
+    merge_request = project.mergerequests.get(merge_id)
+    if initial_head != merge_request.sha:
+        _log.info(
+            "A new revision for %r has been pushed, skipping emailing revision %s",
+            merge_request,
+            initial_head,
+        )
+        return
+    if _ignore(git_forge, merge_request):
+        # A label might have been added or something while we waited for CI.
+        return
 
     emails = _prepare_emails(gitlab, git_forge, project, merge_request)
     with get_connection(fail_silently=False) as conn:
@@ -101,6 +122,43 @@ def email_merge_request(
                 # and raise the exception so we try again
                 submission.delete()
                 raise e
+
+
+def _ignore(git_forge, merge_request):
+    if merge_request.work_in_progress:
+        _log.info("Not emailing %r because it's a work in progress", merge_request)
+        return True
+    if merge_request.merge_status == "cannot_be_merged":
+        _log.info("Not emailing %r because it can't be merged", merge_request)
+        return True
+    if (
+        settings.PATCHLAB_PIPELINE_SUCCESS_REQUIRED
+        and merge_request.head_pipeline["status"] == "failed"
+    ):
+        _log.info("Not emailing %r as the test pipeline failed", merge_request)
+        return True
+    if "From email" in merge_request.labels:
+        _log.info("Not emailing %r as it's from email to start with", merge_request)
+        return True
+    for label in settings.PATCHLAB_IGNORE_GITLAB_LABELS:
+        if label in merge_request.labels:
+            _log.info(
+                "Not emailing %r as it is labeled with the %s label, which is ignored.",
+                merge_request,
+                label,
+            )
+            return True
+    if BridgedSubmission.objects.filter(
+        git_forge=git_forge, merge_request=merge_request.iid, commit=merge_request.sha
+    ).first():
+        _log.info(
+            "Not emailing %r as the head sha is %s, which we already bridged.",
+            merge_request,
+            merge_request.sha,
+        )
+        return True
+
+    return False
 
 
 def _reroll(git_forge, merge_request):

@@ -42,11 +42,18 @@ PATCHLAB_EMAIL_TO_GITLAB_MR = True
 PATCHLAB_EMAIL_TO_GITLAB_COMMENT = True
 
 #: A list of labels that, if any are present on a merge request, are ignored.
-PATCHLAB_IGNORE_GITLAB_LABELS = ["🛑 Do Not Email"]
+PATCHLAB_IGNORE_GITLAB_LABELS = ["🛑 Do Not Email", "Do Not Email"]
 
 #: A regular expression run against emails in the Cc: labels on merge requests
 #: that must match for the email to be included in the list of Ccs.
 PATCHLAB_CC_WHITELIST = r""
+
+#: If True, emails will only be sent if a merge request's pipeline succeeds.
+PATCHLAB_PIPELINE_SUCCESS_REQUIRED = False
+
+#: If PATCHLAB_PIPELINE_SUCCESS_REQUIRED = True, the max time in minutes to wait
+#: for a pipeline to complete. Defaults to 2 hours.
+PATCHLAB_PIPELINE_MAX_WAIT = 120
 
 LOGGING = {
     "version": 1,
