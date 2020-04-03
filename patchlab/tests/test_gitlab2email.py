@@ -269,6 +269,25 @@ class PrepareEmailsTests(BaseTestCase):
         for email in emails:
             self.assertEqual(1, len(email.message()["Subject"].splitlines()))
 
+    def test_wrapped_cover_letter_body(self):
+        """
+        Assert cover letters that are not line-wrapped in GitLab are wrapped to
+        72 characters in their email representation.
+        """
+        gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        project = gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(2)
+
+        emails = gitlab2email._prepare_emails(
+            gitlab, self.forge, project, merge_request
+        )
+
+        self.assertTrue(len(merge_request.description.splitlines()[0]) > 72)
+        for line in emails[0].message().get_payload().splitlines():
+            self.assertTrue(len(line) < 73)
+
 
 @mock.patch(
     "patchlab.gitlab2email.email_utils.formatdate",

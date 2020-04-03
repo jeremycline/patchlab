@@ -6,6 +6,7 @@ emails.
 from email import message_from_string, utils as email_utils
 import logging
 import re
+import textwrap
 import urllib
 
 from django.conf import settings
@@ -154,7 +155,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             headers["In-Reply-To"] = in_reply_to
         body = (
             f"From: {merge_request.author['username']} on {git_forge.host}\n\n"
-            f"{merge_request.description}"
+            f"{textwrap.fill(merge_request.description, width=72)}"
         )
         subject = (
             f"[{branch.subject_prefix} PATCH{version_prefix} 0/{num_commits}] "
