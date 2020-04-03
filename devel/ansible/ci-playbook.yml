@@ -9,6 +9,7 @@
       - name: patchwork
         password: password
         role_attr_flags: SUPERUSER,CREATEROLE,CREATEDB
+    postgres_users_no_log: false
     postgresql_databases:
       - name: patchwork
   roles:

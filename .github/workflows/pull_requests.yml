@@ -38,7 +38,7 @@ jobs:
       run: |
         curl -s https://packagecloud.io/install/repositories/rabbitmq/rabbitmq-server/script.deb.sh | sudo bash
         sudo apt-get update -y
-        sudo apt-get install -y --fix-missing ansible rabbitmq-server
+        sudo apt-get install -y --fix-missing ansible rabbitmq-server python-psycopg2
         sudo systemctl start rabbitmq-server
         sudo ansible-galaxy install geerlingguy.postgresql
         sudo ansible-playbook devel/ansible/ci-playbook.yml
