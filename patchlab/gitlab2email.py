@@ -27,7 +27,6 @@ PREFIX_RE = re.compile(r"^\[.*\]")
 #: :data:`settings.PATCHLAB_MAX_EMAILS`. Instead of sending the patches, send
 #: instructions on how to get the git branch.
 BIG_EMAIL_TEMPLATE = """{description}
-
 Note:
 
 The patch series is too large to sent by email.
@@ -123,6 +122,43 @@ def _reroll(git_forge, merge_request):
     return version, in_reply_to
 
 
+def _merge_request_ccs(git_forge, merge_request):
+    """Collect merge request Ccs"""
+    ccs = []
+    for line in merge_request.description.splitlines():
+        cc_match = re.search(r"^\s*Cc:\s+(.*)$", line)
+        if cc_match:
+            ccs += cc_match.groups()
+
+    ccs += [l[3:].strip() for l in merge_request.labels if l.startswith("Cc:")]
+    return _clean_ccs(ccs)
+
+
+def _commit_ccs(commit):
+    ccs = [commit.author_email]
+    for line in commit.message.splitlines():
+        cc_match = re.search(r"^\s*(Cc|Signed-off-by|Reviewed-by):\s+(.*)$", line)
+        if cc_match and cc_match.group(2).strip():
+            ccs.append(cc_match.group(2).strip())
+
+    return _clean_ccs(ccs)
+
+
+def _clean_ccs(ccs):
+    ccs = [email_utils.parseaddr(cc)[1] for cc in ccs if email_utils.parseaddr(cc)[1]]
+    ccs = list(
+        set(
+            [
+                cc
+                for cc in ccs
+                if re.search(settings.PATCHLAB_CC_WHITELIST, cc, flags=re.IGNORECASE)
+            ]
+        )
+    )
+    ccs.sort()
+    return ccs
+
+
 def _prepare_emails(gitlab, git_forge, project, merge_request):
     """Prepare a set of emails that represent the given merge request."""
     try:
@@ -142,6 +178,8 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
     series_version, in_reply_to = _reroll(git_forge, merge_request)
     version_prefix = f"v{series_version}" if series_version > 1 else ""
 
+    ccs = _merge_request_ccs(git_forge, merge_request)
+
     emails = []
     if num_commits > 1:
         # Compose a cover letter based on the pull request description.
@@ -153,9 +191,19 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         }
         if in_reply_to:
             headers["In-Reply-To"] = in_reply_to
+
+        # We have to wrap each line rather than just using plain textwrap.fill
+        # on the whole description as doing so destroys paragraphs and wraps
+        # any Ccs into a sentence, which isn't what we want.
+        wrapped_description = "\n".join(
+            [
+                textwrap.fill(line, width=72, replace_whitespace=False)
+                for line in merge_request.description.splitlines()
+            ]
+        )
         body = (
             f"From: {merge_request.author['username']} on {git_forge.host}\n\n"
-            f"{textwrap.fill(merge_request.description, width=72)}"
+            f"{wrapped_description}\n"
         )
         subject = (
             f"[{branch.subject_prefix} PATCH{version_prefix} 0/{num_commits}] "
@@ -165,6 +213,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             subject=subject,
             body=body,
             to=[git_forge.project.listemail],
+            cc=ccs,
             headers=headers,
             reply_to=[git_forge.project.listemail],
         )
@@ -196,6 +245,10 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             f"{sanitized_patch_title}"
         )
         patch_author = patch["From"]
+        patch_ccs = sorted(list(set(_commit_ccs(commit) + ccs)))
+        # Ensure anyone getting Cc'd on a patch also gets the cover letter
+        if num_commits > 1:
+            emails[0].cc = sorted(list(set(emails[0].cc + patch_ccs)))
 
         headers = {
             "Date": email_utils.formatdate(localtime=settings.EMAIL_USE_LOCALTIME),
@@ -212,6 +265,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
             subject=subject,
             body=f"From: {patch_author}\n\n{patch.get_payload()}",
             to=[git_forge.project.listemail],
+            cc=patch_ccs,
             headers=headers,
             reply_to=[git_forge.project.listemail],
         )

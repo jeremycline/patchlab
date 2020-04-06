@@ -36,6 +36,7 @@ Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH] Bring balance to the equals signs
 From: Patchwork <patchwork@patchwork.example.com>
 To: kernel@lists.fedoraproject.org
+Cc: jcline@redhat.com
 Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <4@localhost.localdomain>
@@ -74,6 +75,8 @@ Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 0/2] Update the README
 From: Patchwork <patchwork@patchwork.example.com>
 To: kernel@lists.fedoraproject.org
+Cc: another_person@example.com, jcline@redhat.com, reviewer@example.com,
+ someone@example.com
 Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <1@localhost.localdomain>
@@ -82,13 +85,17 @@ X-Patchlab-Series-Version: 1
 
 From: root on gitlab.example.com
 
-Update the README to make me want to read it more.""",
+Update the README to make me want to read it more.
+
+Cc: reviewer@example.com
+""",
     """Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 1/2] Bring balance to the equals signs
 From: Patchwork <patchwork@patchwork.example.com>
 To: kernel@lists.fedoraproject.org
+Cc: another_person@example.com, jcline@redhat.com, reviewer@example.com
 Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <2@localhost.localdomain>
@@ -126,6 +133,7 @@ Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 2/2] Convert the README to restructured text
 From: Patchwork <patchwork@patchwork.example.com>
 To: kernel@lists.fedoraproject.org
+Cc: jcline@redhat.com, reviewer@example.com, someone@example.com
 Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
 Message-ID: <4@localhost.localdomain>
