@@ -119,7 +119,9 @@ class Branch(models.Model):
     subject_prefix = models.CharField(
         max_length=64,
         help_text="The prefix to include in emails in addition to "
-        "'PATCHvN'. The default will just be PATCH.",
+        "'PATCHvN'. The default is no prefix.",
+        blank=True,
+        default="",
     )
 
     subject_match = models.CharField(
