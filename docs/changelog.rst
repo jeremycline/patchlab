@@ -4,6 +4,40 @@ Release Notes
 
 .. towncrier release notes start
 
+v0.4.0 (2020-04-27)
+===================
+
+This update contains a database migration. Be sure to run it with
+``django-admin migrate`` before restarting the services.
+
+Features
+--------
+
+* Merge request descriptions are now wrapped to 72 columns in the email
+  version.
+
+* Cc users to a merge request if tagged in the commit. A filter is available to
+  ensure it only sends to particular domains. See the `PATCHLAB_CC_FILTER`
+  setting.
+
+* Add "update" to merge request hook and filters to the task so the merge
+  request web hook can be used. This works when merge requests from forks are
+  sent, which the Pipelines event handler does not.
+
+Bug Fixes
+---------
+
+* Fix the "MR is too big" template to use the merge iid. If there's no
+  description, include a note in the email about that. Finally, a typo was
+  fixed in the template.
+
+* Use iid rather than id for merge requests bridged from email
+
+* The subject prefix of outgoing patches was documented as defaulting to PATCH,
+  but did not actually have a default and would not allow for an empty form
+  submission. Reality now more closely resembles the documentation.
+
+
 v0.3.0 (2019-12-06)
 ===================
 

@@ -209,7 +209,7 @@ def _clean_ccs(ccs):
             [
                 cc
                 for cc in ccs
-                if re.search(settings.PATCHLAB_CC_WHITELIST, cc, flags=re.IGNORECASE)
+                if re.search(settings.PATCHLAB_CC_FILTER, cc, flags=re.IGNORECASE)
             ]
         )
     )

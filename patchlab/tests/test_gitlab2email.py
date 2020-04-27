@@ -203,11 +203,11 @@ class PrepareEmailsTests(BaseTestCase):
             sorted(["user@example.com", "jcline@redhat.com"]), sorted(emails[0].cc)
         )
 
-    @override_settings(PATCHLAB_CC_WHITELIST=r"@notlocaldomain.com$")
+    @override_settings(PATCHLAB_CC_FILTER=r"@notlocaldomain.com$")
     @mock.patch("patchlab.gitlab2email.email_utils.make_msgid")
-    def test_ccs_not_whitelisted(self, mock_make_msgid):
+    def test_ccs_not_filtered(self, mock_make_msgid):
         """
-        Assert a merge request with "Cc:" tags that don't match the whitelist
+        Assert a merge request with "Cc:" tags that don't match the filter
         are ignored.
         """
         mock_make_msgid.return_value = "<4@localhost.localdomain>"

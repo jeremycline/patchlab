@@ -46,7 +46,7 @@ PATCHLAB_IGNORE_GITLAB_LABELS = ["🛑 Do Not Email", "Do Not Email"]
 
 #: A regular expression run against emails in the Cc: labels on merge requests
 #: that must match for the email to be included in the list of Ccs.
-PATCHLAB_CC_WHITELIST = r""
+PATCHLAB_CC_FILTER = r""
 
 #: If True, emails will only be sent if a merge request's pipeline succeeds.
 PATCHLAB_PIPELINE_SUCCESS_REQUIRED = False
