@@ -55,6 +55,11 @@ PATCHLAB_PIPELINE_SUCCESS_REQUIRED = False
 #: for a pipeline to complete. Defaults to 2 hours.
 PATCHLAB_PIPELINE_MAX_WAIT = 120
 
+#: The email to use for From: in bridged comments and patches. Python's
+#: `format` API will be called on the string. Currently the only key provided is
+#: `forge_author` which is set to the user's name on the Git forge.
+PATCHLAB_FROM_EMAIL = "Email Bridge on behalf of {forge_user} <bridge@example.com>"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

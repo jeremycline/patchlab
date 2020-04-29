@@ -34,7 +34,7 @@ SINGLE_COMMIT_MR = """Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH] Bring balance to the equals signs
-From: Patchwork <patchwork@patchwork.example.com>
+From: Email Bridge on behalf of root <bridge@example.com>
 To: kernel@lists.fedoraproject.org
 Cc: jcline@redhat.com
 Reply-To: kernel@lists.fedoraproject.org
@@ -73,7 +73,7 @@ MULTI_COMMIT_MR = [
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 0/2] Update the README
-From: Patchwork <patchwork@patchwork.example.com>
+From: Email Bridge on behalf of root <bridge@example.com>
 To: kernel@lists.fedoraproject.org
 Cc: another_person@example.com, jcline@redhat.com, reviewer@example.com,
  someone@example.com
@@ -93,7 +93,7 @@ Cc: reviewer@example.com
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 1/2] Bring balance to the equals signs
-From: Patchwork <patchwork@patchwork.example.com>
+From: Email Bridge on behalf of root <bridge@example.com>
 To: kernel@lists.fedoraproject.org
 Cc: another_person@example.com, jcline@redhat.com, reviewer@example.com
 Reply-To: kernel@lists.fedoraproject.org
@@ -131,7 +131,7 @@ index 669ac7c32292..a0cc9c082916 100644
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 2/2] Convert the README to restructured text
-From: Patchwork <patchwork@patchwork.example.com>
+From: Email Bridge on behalf of root <bridge@example.com>
 To: kernel@lists.fedoraproject.org
 Cc: jcline@redhat.com, reviewer@example.com, someone@example.com
 Reply-To: kernel@lists.fedoraproject.org
@@ -167,7 +167,7 @@ BIG_EMAIL = """Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Subject: [TEST PATCH 0/2] Update the README
-From: Patchwork <patchwork@patchwork.example.com>
+From: Email Bridge on behalf of root <bridge@example.com>
 To: kernel@lists.fedoraproject.org
 Reply-To: kernel@lists.fedoraproject.org
 Date: Mon, 04 Nov 2019 23:00:00 -0000
