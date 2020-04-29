@@ -16,6 +16,10 @@ Django
 .. autodata:: patchlab.settings.base.PATCHLAB_EMAIL_TO_GITLAB_MR
 .. autodata:: patchlab.settings.base.PATCHLAB_EMAIL_TO_GITLAB_COMMENT
 .. autodata:: patchlab.settings.base.PATCHLAB_IGNORE_GITLAB_LABELS
+.. autodata:: patchlab.settings.base.PATCHLAB_CC_FILTER
+.. autodata:: patchlab.settings.base.PATCHLAB_PIPELINE_SUCCESS_REQUIRED
+.. autodata:: patchlab.settings.base.PATCHLAB_PIPELINE_MAX_WAIT
+.. autodata:: patchlab.settings.base.PATCHLAB_FROM_EMAIL
 
 
 Git

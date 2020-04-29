@@ -231,6 +231,9 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         )
         return []
 
+    from_email = settings.PATCHLAB_FROM_EMAIL.format(
+        forge_user=merge_request.author["username"]
+    )
     commits = list(reversed(list(merge_request.commits())))
     num_commits = len(commits)
     series_version, in_reply_to = _reroll(git_forge, merge_request)
@@ -270,6 +273,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         cover_letter = EmailMessage(
             subject=subject,
             body=body,
+            from_email=from_email,
             to=[git_forge.project.listemail],
             cc=ccs,
             headers=headers,
@@ -322,6 +326,7 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         email = EmailMessage(
             subject=subject,
             body=f"From: {patch_author}\n\n{patch.get_payload()}",
+            from_email=from_email,
             to=[git_forge.project.listemail],
             cc=patch_ccs,
             headers=headers,
