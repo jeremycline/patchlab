@@ -6,10 +6,6 @@
       - postgresql-devel
       - postgresql
       - python3-psycopg2
-      - mariadb-server
-      - mariadb-devel
-      - mariadb
-      - python3-PyMySQL
 
 - name: check for postgres db
   find:
@@ -74,20 +70,3 @@
     role_attr_flags: SUPERUSER,CREATEROLE,CREATEDB
   become: true
   become_user: postgres
-
-- service:
-    name: mariadb
-    state: started
-    enabled: yes
-
-- name: Add patchwork mysql database
-  mysql_db:
-    name: patchwork
-    state: present
-
-- name: Add patchwork user
-  mysql_user:
-    name: patchwork
-    password: password
-    priv: '*.*:ALL'
-    state: present
