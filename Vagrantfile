@@ -30,9 +30,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
  config.vm.define "gitlab" do |gitlab|
     gitlab.vm.host_name = "gitlab"
-    gitlab.vm.box_url = "https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-1907_01.Libvirt.box"
-    gitlab.vm.box = "centos7-1907-libvirt"
-    gitlab.vm.box_download_checksum = "10907f19d5ff7d5bab5bef414bdb7305bbff39502001bd36b82ef3a9afc62910"
+    gitlab.vm.box_url = "https://cloud.centos.org/centos/7/vagrant/x86_64/images/CentOS-7-x86_64-Vagrant-2002_01.Libvirt.box"
+    gitlab.vm.box = "centos7-2002-libvirt"
+    gitlab.vm.box_download_checksum = "60051ab37a7ff0688db6a7eb505247ae076cf5fe79c2abb8dc20c451e861087f"
     gitlab.vm.box_download_checksum_type = "sha256"
 
     # Expose Gitlab on port 8443 for the web UI and SSH on 2222
@@ -55,7 +55,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
  end
 
  config.vm.define "pw" do |pw|
-    pw.vm.box = "fedora/30-cloud-base"
+    pw.vm.box = "fedora/31-cloud-base"
     pw.vm.synced_folder ".", "/home/vagrant/patchlab", type: "sshfs"
 
     # Forward traffic on the host to the Django development server on the guest
