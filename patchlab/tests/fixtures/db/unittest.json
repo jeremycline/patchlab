@@ -86,6 +86,7 @@
     "pk": 1,
     "fields": {
         "series": 1,
+        "project_id": 1,
         "msgid": "<4@localhost.localdomain>"
     }
 },
@@ -94,6 +95,7 @@
     "pk": 2,
     "fields": {
         "series": 2,
+        "project_id": 1,
         "msgid": "<157530798430.5472.9327296165743891677@patchwork>"
     }
 },
