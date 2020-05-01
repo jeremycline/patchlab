@@ -53,7 +53,7 @@ def submit_gitlab_comment(gitlab: gitlab_module.Gitlab, comment: Comment) -> Non
         _log.info("Unable to find a bridged submission for %s", str(comment.submission))
         return
 
-    project = gitlab.projects.get(comment.submission.project.git_forge.project_id)
+    project = gitlab.projects.get(comment.submission.project.git_forge.forge_id)
     merge_request = project.mergerequests.get(bridged_submission.merge_request)
 
     # Turn Ack-by/Nack-by into Gitlab tags. This doesn't attempt to undo any
