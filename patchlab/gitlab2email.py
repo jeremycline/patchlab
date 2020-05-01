@@ -359,7 +359,18 @@ def _record_bridging(listid: str, merge_id: int, email: EmailMessage) -> None:
         )
         raise ValueError(email)
 
-    submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
+    try:
+        submission = Submission.objects.get(msgid=email.extra_headers["Message-ID"])
+    except Submission.DoesNotExist:
+        _log.error(
+            "Patchwork did not save the email which likely means the subject "
+            "match field on the project with listid '%s' is filtering out "
+            "emails with subjects like '%s'",
+            listid,
+            email.subject,
+        )
+        raise
+
     bridged_submission = BridgedSubmission(
         submission=submission,
         git_forge=submission.project.git_forge,

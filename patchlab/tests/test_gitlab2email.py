@@ -390,6 +390,28 @@ class RecordBridgingTests(BaseTestCase):
             "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
         )
 
+    def test_patches_filtered_subject(self):
+        """
+        Assert if a patch gets filtered due to the project's subject
+        filtering, we log an error so the admin knows what to do and raise an
+        exception
+        """
+        self.project.subject_match = r"\[THIS FILTERS OUR PATCHES\]"
+        self.project.save()
+        project = self.gitlab.projects.get(1)
+        merge_request = project.mergerequests.get(1)
+        emails = gitlab2email._prepare_emails(
+            self.gitlab, self.forge, self.project, merge_request
+        )
+
+        self.assertRaises(
+            pw_models.Submission.DoesNotExist,
+            gitlab2email._record_bridging,
+            self.forge.project.listid,
+            1,
+            emails[0],
+        )
+
     def test_multi_patch_series(self):
         project = self.gitlab.projects.get(1)
         merge_request = project.mergerequests.get(2)
