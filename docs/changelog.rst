@@ -4,6 +4,30 @@ Release Notes
 
 .. towncrier release notes start
 
+v0.5.0 (2020-05-01)
+===================
+
+This release has been tested against Patchwork 2.2.1.
+
+Features
+--------
+
+* Add a new setting, `PATCHLAB_FROM_EMAIL`, that is then formatted with the
+  "forge_user" key. The default is "Email Bridge on behalf of {forge_user}
+  <bridge@example.com>". forge_user is set to the Gitlab username.
+
+Bug Fixes
+---------
+
+* If the Patchwork project was configured with a subject_match field that
+  filtered out emails sent by Patchlab, the bridge would fail without a clear
+  error. An error is now logged if this occurs with clear instructions on how
+  to fix it.
+
+* Bridging emails to comments was broken unless your Patchwork project id
+  somehow matched your Gitlab's project id. This has been fixed.
+
+
 v0.4.0 (2020-04-27)
 ===================
 
