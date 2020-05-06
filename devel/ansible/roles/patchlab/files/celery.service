@@ -1,0 +1,19 @@
+[Unit]
+Description=Celery worker
+After=network.target
+
+[Service]
+Type=simple
+User=patchwork
+Group=patchwork
+Environment="DJANGO_SETTINGS_MODULE=patchwork.settings.production"
+WorkingDirectory=/var/tmp/patchlab
+ExecStart=/srv/patchwork/bin/celery worker -E -A patchlab -l info
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
+
+[Install]
+WantedBy=multi-user.target

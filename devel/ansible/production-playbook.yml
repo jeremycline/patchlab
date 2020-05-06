@@ -1,0 +1,27 @@
+---
+
+
+# Supported variables:
+#
+# vault_patchwork_secret_key: A long random string
+# vault_patchlab_gitlab_webhook_secret: A long random string used to authenticate GitLab webhooks
+# vault_gitlab_private_token: A GitLab API token
+# vault_imap_password: Password fetchmail should use for IMAP access
+# vault_patchwork_database_password: A long random string
+# patchlab_fqdn: The fully-qualified domain name to use when serving
+# patchwork_email_host: SMTP server to send mail from
+# patchwork_email_port: The port to use for SMTP (probably 587)
+# patchwork_email_user: SMTP username
+# patchwork_email_password: SMTP password
+# patchwork_default_from_email: Email address to use as the default for emails sent in Django
+# patchlab_from_email: Email to use when bridging patches.
+# imap_host: IMAP host for fetchmail to use
+# imap_port: Port for fetchmail to use
+# imap_user: IMAP user
+- hosts: patchlab
+  become: true
+  become_method: sudo
+  vars:
+    ansible_python_interpreter: "/usr/bin/python3"
+  roles:
+    - patchlab

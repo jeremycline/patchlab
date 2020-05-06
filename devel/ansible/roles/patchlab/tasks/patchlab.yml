@@ -1,0 +1,129 @@
+---
+
+- name: Install system dependencies for Python packages
+  package: name={{ item }} state=present
+  with_items:
+    - git
+    - gcc
+    - make
+    - libffi-devel
+    - openssl-devel
+    - postgresql-devel
+    - python3-devel
+    - python3-virtualenv
+
+- name: Create python-gitlab config
+  template:
+    src: python-gitlab.cfg.j2
+    dest: /etc/python-gitlab.cfg
+    mode: 0640
+    owner: root
+    group: patchwork
+
+- name: Create virtualenv directory
+  file:
+    path: /srv/patchwork
+    state: directory
+    owner: patchwork
+    group: patchwork
+    mode: 0755
+
+- name: Enable domain_can_mmap_files sebool
+  seboolean:
+    name: domain_can_mmap_files
+    state: yes
+    persistent: yes
+
+# For now, install Patchwork from a fork with a setup.py
+# If https://patchwork.ozlabs.org/project/patchwork/patch/20200428213613.280483-1-jcline@redhat.com/
+# is accepted we can move to a more official location
+- name: Install the Patchwork application
+  become_user: patchwork
+  pip:
+    name: https://github.com/jeremycline/patchwork/releases/download/v2.2.1/patchwork-2.2.1-py3-none-any.whl
+    virtualenv: /srv/patchwork/
+    virtualenv_python: python3
+
+- name: Install the Patchlab application
+  become_user: patchwork
+  pip:
+    name: patchlab
+    virtualenv: /srv/patchwork/
+    virtualenv_python: python3
+
+# Until Rabbit is fixed, use redis
+- name: Install the redis client for celery
+  become_user: patchwork
+  pip:
+    name: redis
+    virtualenv: /srv/patchwork/
+    virtualenv_python: python3
+
+# TODO move this out of site-packages
+- name: Create Patchwork configuration
+  template:
+    src: patchwork_config.py
+    dest: /srv/patchwork/lib/python3.8/site-packages/patchwork/settings/production.py
+    mode: 0640
+    owner: root
+    group: patchwork
+  notify:
+    - restart httpd
+    - restart celery
+
+- name: Run database migrations
+  become_user: patchwork
+  shell: >
+    DJANGO_SETTINGS_MODULE=patchwork.settings.production
+    /srv/patchwork/bin/django-admin migrate
+
+- name: Load initial Patchwork data
+  become_user: patchwork
+  shell: >
+    DJANGO_SETTINGS_MODULE=patchwork.settings.production \
+    /srv/patchwork/bin/django-admin loaddata default_tags default_states && \
+    touch /srv/patchwork/.initial_data
+  args:
+    creates: /srv/patchwork/.initial_data
+
+- name: Create static file directory
+  file:
+    path: /var/www/patchwork/static/
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Collect static files
+  shell: >
+    DJANGO_SETTINGS_MODULE=patchwork.settings.production \
+    /srv/patchwork/bin/django-admin collectstatic --noinput
+
+- name: Create patchlab repo directory
+  file:
+    path: /var/lib/patchlab
+    state: directory
+    owner: patchwork
+    group: patchwork
+    mode: 0750
+
+- name: Install celery worker systemd service file
+  copy:
+    src: celery.service
+    dest: /etc/systemd/system/celery.service
+  notify:
+    - restart celery
+
+- name: Install tmpfiles configuration
+  template:
+    src: patchwork_tmpfiles.conf
+    dest: /etc/tmpfiles.d/patchlab.conf
+  notify:
+    - run tmpfiles
+
+- name: start celery
+  systemd:
+    name: celery
+    enabled: true
+    daemon_reload: true
+    state: started

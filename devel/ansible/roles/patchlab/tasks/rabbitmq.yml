@@ -1,0 +1,56 @@
+---
+
+- name: Install RabbitMQ packages
+  package:
+      name: "{{ item }}"
+      state: present
+  with_items:
+      - rabbitmq-server
+
+- name: Create RabbitMQ systemd override directory
+  file:
+    path: /etc/systemd/system/rabbitmq-server.service.d/
+    state: directory
+
+- name: Override file limit on rabbitmq
+  copy:
+    content: "[Service]\nLimitNOFILE={{rabbitmq_cluster_file_limit}}\n"
+    dest: /etc/systemd/system/rabbitmq-server.service.d/override.conf
+  notify:
+    - reload rabbitmq
+
+- name: Enable the HTTP management console
+  rabbitmq_plugin:
+    names: "rabbitmq_management"
+  tags:
+  - rabbitmq_cluster
+  - config
+  notify:
+    - reload rabbitmq
+
+- name: Fix perms on the erlang cookie
+  file:
+    path: /var/lib/rabbitmq/.erlang.cookie
+    owner: rabbitmq
+    group: rabbitmq
+    mode: "0400"
+
+- name: start rabbitmq
+  service: name=rabbitmq-server state=started enabled=yes
+
+- name: Configure a policy to ensure the vhost stays tidy
+  run_once: true
+  rabbitmq_policy:
+    apply_to: queues
+    name: sweeper
+    state: present
+    pattern: ".*"
+    tags:
+      # Unused queues are killed after 1000 * 60 * 60 * 24 * 7 (1 week in milliseconds)
+      expires: 604800000
+      # Queues can use at most 1024 * 1024 * 50 (50MB) to store messages
+      max-length-bytes: 52428800
+    vhost: /
+  tags:
+  - rabbitmq_cluster
+  - config

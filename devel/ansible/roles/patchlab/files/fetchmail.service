@@ -1,0 +1,18 @@
+[Unit]
+Description=fetchmail retrieval for patchlab
+After=network.target
+
+[Service]
+Type=simple
+User=patchwork
+Group=patchwork
+Environment="DJANGO_SETTINGS_MODULE=patchwork.settings.production"
+ExecStart=/usr/bin/fetchmail --fetchmailrc=/etc/fetchmail/patchlab
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
+
+[Install]
+WantedBy=multi-user.target

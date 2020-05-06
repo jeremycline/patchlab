@@ -1,0 +1,53 @@
+
+module patchlab 1.0;
+
+require {
+	type init_tmp_t;
+	type var_t;
+	type init_t;
+	type etc_t;
+	type smtp_port_t;
+	type httpd_config_t;
+	type amqp_port_t;
+	type httpd_t;
+	type fetchmail_t;
+	type krb5_keytab_t;
+	type firewalld_t;
+	type postgresql_var_run_t;
+	type user_home_t;
+	type http_port_t;
+	type postgresql_t;
+	type user_home_dir_t;
+	class file { create execute execute_no_trans getattr ioctl map open read rename unlink write };
+	class dir { add_name read remove_name search write };
+	class tcp_socket name_connect;
+	class capability sys_nice;
+	class unix_stream_socket connectto;
+	class sock_file write;
+}
+
+#============= fetchmail_t ==============
+allow fetchmail_t etc_t:dir write;
+allow fetchmail_t httpd_config_t:dir search;
+allow fetchmail_t krb5_keytab_t:dir search;
+allow fetchmail_t postgresql_t:unix_stream_socket connectto;
+allow fetchmail_t postgresql_var_run_t:sock_file write;
+allow fetchmail_t user_home_dir_t:dir { add_name remove_name write };
+allow fetchmail_t user_home_dir_t:file { create open unlink write };
+allow fetchmail_t user_home_t:file read;
+allow fetchmail_t var_t:dir read;
+allow fetchmail_t var_t:file { execute execute_no_trans getattr ioctl open read };
+
+#============= httpd_t ==============
+allow httpd_t amqp_port_t:tcp_socket name_connect;
+allow httpd_t user_home_dir_t:dir read;
+allow httpd_t var_t:file { execute getattr ioctl map open read unlink };
+
+#============= init_t ==============
+allow init_t amqp_port_t:tcp_socket name_connect;
+allow init_t http_port_t:tcp_socket name_connect;
+allow init_t init_tmp_t:file map;
+allow init_t postgresql_t:unix_stream_socket connectto;
+allow init_t smtp_port_t:tcp_socket name_connect;
+allow init_t var_t:file { create rename unlink write };
+allow init_t var_t:file { execute execute_no_trans ioctl map open read };
