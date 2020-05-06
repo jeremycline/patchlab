@@ -1,0 +1,47 @@
+---
+
+- name: Install database packages
+  package: name={{ item }} state=present
+  with_items:
+      - postgresql-server
+      - postgresql-devel
+      - postgresql
+      - python3-psycopg2
+
+- name: check for postgres db
+  find:
+    paths: /var/lib/pgsql/data
+    depth: 1
+    file_type: any
+  register: pg_init
+
+- name: init postgres db
+  command: postgresql-setup initdb
+  when: pg_init.matched == 0
+
+- service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Create databases
+  postgresql_db:
+    name: "patchwork"
+    encoding: UTF-8
+    lc_collate: en_US.UTF-8
+    lc_ctype: en_US.UTF-8
+    template: template0
+  no_log: true
+  become: true
+  become_user: postgres
+
+- name: Create database user
+  postgresql_user:
+    state: present
+    db: "patchwork"
+    name: "patchwork"
+    password: "{{ vault_patchwork_database_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEROLE,NOCREATEDB
+  no_log: true
+  become: true
+  become_user: postgres

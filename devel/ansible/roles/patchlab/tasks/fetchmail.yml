@@ -1,0 +1,40 @@
+---
+
+- name: Install fetchmail package
+  package:
+      name: "{{ item }}"
+      state: present
+  with_items:
+      - fetchmail
+
+- name: Create fetchmail configuration directory
+  file:
+    path: /etc/fetchmail/
+    state: directory
+    owner: patchwork
+    group: patchwork
+    mode: 0750
+
+- name: Install fetchmail configuration
+  template:
+    src: fetchmailrc.j2
+    dest: /etc/fetchmail/patchlab
+    owner: patchwork
+    group: patchwork
+    mode: 0600
+  notify:
+    - restart fetchmail
+
+- name: Install fetchmail systemd service file
+  copy:
+    src: fetchmail.service
+    dest: /etc/systemd/system/fetchmail.service
+  notify:
+    - restart fetchmail
+
+- name: start fetchmail
+  systemd:
+    name: fetchmail
+    enabled: true
+    daemon_reload: true
+    state: started

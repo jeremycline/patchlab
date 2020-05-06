@@ -1,0 +1,10 @@
+poll imap.gmail.com protocol imap:
+     user "{{ patchwork_email_user }}"
+     pass "{{ patchwork_email_password }}"
+     folder "patchlab"
+     mda "/srv/patchwork/bin/django-admin parsemail"
+     no fetchall
+     no rewrite
+     idle
+     keep
+     ssl

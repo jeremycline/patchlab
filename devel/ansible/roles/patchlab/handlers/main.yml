@@ -1,0 +1,54 @@
+---
+
+- name: reload firewalld
+  command: firewall-cmd --reload
+
+- name: restart postgres
+  service: name=postgresql state=restarted
+
+- name: reload rabbitmq
+  service: name=rabbitmq-server state=restarted
+
+- name: restart postfix
+  service: name=postfix state=restarted
+
+- name: restart httpd
+  service: name=httpd state=restarted
+
+- name: restart redis
+  service: name=redis state=restarted
+
+- name: regen sasl_passwd
+  command: postmap /etc/postfix/sasl_passwd
+
+- name: postfix load aliases
+  command: newaliases
+
+- name: postmap transport
+  command: postmap /etc/postfix/transport
+
+- name: postfix postmap sasl_passwd
+  command: postmap /etc/postfix/sasl_passwd
+
+- name: restart postfix
+  service: name=postfix state=restarted
+
+- name: reload firewalld
+  command: firewall-cmd --reload
+
+- name: restart fetchmail
+  systemd:
+    name: fetchmail
+    enabled: true
+    daemon_reload: true
+    state: restarted
+
+- name: restart celery
+  systemd:
+    name: celery
+    enabled: true
+    daemon_reload: true
+    state: restarted
+
+- name: run tmpfiles
+  command: systemd-tmpfiles --create

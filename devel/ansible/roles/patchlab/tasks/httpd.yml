@@ -1,0 +1,31 @@
+---
+
+- name: Install httpd
+  package: name={{ item }} state=present
+  with_items:
+    - httpd
+    - mod_ssl
+    - python3-mod_wsgi
+
+- name: Install httpd configuration
+  template:
+    src: httpd_patchlab.conf
+    dest: /etc/httpd/conf.d/ssl.conf
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart httpd
+
+- name: open firewall ports
+  firewalld:
+    service: "{{ item }}"
+    permanent: true
+    state: enabled
+  loop:
+    - http
+    - https
+  notify: reload firewalld
+
+- name: start httpd
+  service: name=httpd state=started enabled=yes
