@@ -18,6 +18,7 @@
 # imap_host: IMAP host for fetchmail to use
 # imap_port: Port for fetchmail to use
 # imap_user: IMAP user
+# bridged_list_id: The List-ID being bridged. Necessary as if you're subscribed to the list and Cc'd, Gmail will deduplicate the copies and likely you'll get the non-list copy first
 - hosts: patchlab
   become: true
   become_method: sudo
