@@ -46,6 +46,15 @@ def comment_event_handler(sender, **kwargs):
     A signal handler that bridges emailed comments to a merge request, if one
     exists.
     """
+    # Make sure we don't bridge comments back to GitLab
+    mail_headers = email.message_from_string(kwargs["instance"].headers)
+    if "X-Patchlab-Comment" in mail_headers:
+        _log.info(
+            "Ignoring instance %d as it originated from the bridge.",
+            kwargs["instance"].id,
+        )
+        return
+
     try:
         submit_gitlab_comment.apply_async((kwargs["instance"].id,))
     except Exception:

@@ -89,5 +89,18 @@ def merge_request_hook(gitlab_host: str, project_id: int, merge_id: int) -> None
 
 
 @shared_task
-def email_comment(comment):
-    pass
+def email_comment(
+    gitlab_host: str, project_id: int, comment_author, comment, merge_id=None,
+):
+    try:
+        gitlab = gitlab_module.Gitlab.from_config(gitlab_host)
+    except gitlab_module.config.ConfigError:
+        _log.error("Missing Gitlab configuration for %s", gitlab_host)
+        return
+    try:
+        gitlab2email.email_comment(
+            gitlab, project_id, comment_author, comment, merge_id
+        )
+    except Exception as e:
+        _log.warning("Failed to send gitlab comment as email, retrying...")
+        raise merge_request_hook.retry(exc=e, throw=False, countdown=60)

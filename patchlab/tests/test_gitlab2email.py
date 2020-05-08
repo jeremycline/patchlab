@@ -1,4 +1,6 @@
 from unittest import mock
+import os
+import json
 
 from django.core import mail
 from django.test import override_settings
@@ -6,7 +8,7 @@ from patchwork import models as pw_models
 import gitlab as gitlab_module
 
 from patchlab import gitlab2email, models
-from . import BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR, BaseTestCase
+from . import BIG_EMAIL, SINGLE_COMMIT_MR, MULTI_COMMIT_MR, BaseTestCase, FIXTURES
 
 
 @override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
@@ -466,3 +468,122 @@ class RecordBridgingTests(BaseTestCase):
                 1,
                 email,
             )
+
+
+@override_settings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
+class EmailCommentTests(BaseTestCase):
+    """
+    Tests for the :func:`gitlab2email.email_comment` function.
+    """
+
+    def setUp(self):
+        super().setUp()
+        try:
+            mail.outbox.clear()
+        except AttributeError:
+            pass
+        self.gitlab = gitlab_module.Gitlab(
+            "https://gitlab", private_token="iaxMadvFyRCFRFH1CkW6", ssl_verify=False
+        )
+        self.project = pw_models.Project.objects.create(
+            linkname="ark",
+            name="ARK",
+            listid="kernel.lists.fedoraproject.org",
+            listemail="kernel@lists.fedoraproject.org",
+        )
+        self.forge = models.GitForge.objects.create(
+            project=self.project, host="gitlab", forge_id=42
+        )
+        self.branch = models.Branch.objects.create(
+            git_forge=self.forge, subject_prefix="TEST", name="internal"
+        )
+        with open(os.path.join(FIXTURES, "inline_code_comment.json")) as fd:
+            self.inline_code_comment_payload = json.load(fd)
+        with open(os.path.join(FIXTURES, "comment_on_commit.json")) as fd:
+            self.comment_on_commit_payload = json.load(fd)
+        with open(os.path.join(FIXTURES, "comment_on_mr.json")) as fd:
+            self.comment_on_mr_payload = json.load(fd)
+
+    def test_comment_no_bridged_email(self):
+        """Assert if no merge request is recorded as bridged, we email nothing."""
+        gitlab2email.email_comment(
+            self.gitlab,
+            self.forge.forge_id,
+            self.comment_on_mr_payload["user"],
+            self.comment_on_mr_payload["object_attributes"],
+            1,
+        )
+        self.assertEqual(0, len(mail.outbox))
+
+    def test_comment_on_mr_email(self):
+        """Assert comments bridged MRs are emailed."""
+        submission = pw_models.Submission.objects.first()
+        models.BridgedSubmission.objects.create(
+            git_forge=self.forge, merge_request=42, submission=submission
+        )
+        expected_body = (
+            "From: Administrator on gitlab\n"
+            "https://gitlab/root/patchlab_test/merge_requests/1#note_2\n\n"
+            "Not great, not terrible.\n"
+        )
+
+        gitlab2email.email_comment(
+            self.gitlab,
+            self.forge.forge_id,
+            self.comment_on_mr_payload["user"],
+            self.comment_on_mr_payload["object_attributes"],
+            42,
+        )
+
+        self.assertEqual(1, len(mail.outbox))
+        self.assertEqual(expected_body, mail.outbox[0].body)
+
+    def test_comment_on_commit_email(self):
+        """Assert comments bridged MRs are emailed."""
+        submission = pw_models.Submission.objects.first()
+        models.BridgedSubmission.objects.create(
+            git_forge=self.forge,
+            merge_request=42,
+            submission=submission,
+            commit="2311157d92dc85e012342cd07c503ee397af2f1e",
+        )
+        expected_body = (
+            "From: Administrator on gitlab\n"
+            "https://gitlab/root/patchlab_test/commit/"
+            "2311157d92dc85e012342cd07c503ee397af2f1e#note_4\n\n"
+            "Here's a comment on a commit\n"
+        )
+
+        gitlab2email.email_comment(
+            self.gitlab,
+            self.forge.forge_id,
+            self.comment_on_commit_payload["user"],
+            self.comment_on_commit_payload["object_attributes"],
+            42,
+        )
+
+        self.assertEqual(1, len(mail.outbox))
+        self.assertEqual(expected_body, mail.outbox[0].body)
+
+    def test_inline_code_comment_email(self):
+        """Assert comments bridged MRs are emailed."""
+        submission = pw_models.Submission.objects.first()
+        models.BridgedSubmission.objects.create(
+            git_forge=self.forge, merge_request=42, submission=submission
+        )
+        expected_body = (
+            "From: Administrator on gitlab\n"
+            "https://gitlab/root/patchlab_test/merge_requests/1#note_3\n\n"
+            "This change in particular, I don't like it.\n"
+        )
+
+        gitlab2email.email_comment(
+            self.gitlab,
+            self.forge.forge_id,
+            self.inline_code_comment_payload["user"],
+            self.inline_code_comment_payload["object_attributes"],
+            42,
+        )
+
+        self.assertEqual(1, len(mail.outbox))
+        self.assertEqual(expected_body, mail.outbox[0].body)

@@ -337,6 +337,72 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
     return emails
 
 
+def email_comment(gitlab, forge_id, author, comment, merge_id=None) -> None:
+    """Email a comment made on Gitlab"""
+    try:
+        git_forge = GitForge.objects.get(
+            host=urllib.parse.urlsplit(gitlab.url).hostname, forge_id=forge_id
+        )
+    except GitForge.DoesNotExist:
+        _log.error(
+            "Got comment event for project id %d, which isn't in the database", forge_id
+        )
+        return
+
+    commit = comment.get("commit_id")
+    try:
+        bridged_submission = BridgedSubmission.objects.filter(
+            git_forge=git_forge
+        ).order_by("-series_version")
+        if merge_id:
+            bridged_submission = bridged_submission.filter(merge_request=merge_id)
+        if commit:
+            bridged_submission = bridged_submission.filter(commit=commit)
+        bridged_submission = bridged_submission[0]
+    except IndexError:
+        _log.info(
+            "Unable to find a bridged submission for comment on MR %d, commit %s, forge %r",
+            merge_id,
+            commit,
+            git_forge,
+        )
+        return
+
+    from_email = settings.PATCHLAB_FROM_EMAIL.format(forge_user=["author"])
+    # From the bridged_submission, find the in-reply-to, create email.
+    headers = {
+        "Date": email_utils.formatdate(localtime=settings.EMAIL_USE_LOCALTIME),
+        "Message-ID": email_utils.make_msgid(domain=DNS_NAME),
+        "In-Reply-To": bridged_submission.submission.msgid,
+        "X-Patchlab-Comment": comment["url"],
+    }
+    subject = (
+        "Re: " + message_from_string(bridged_submission.submission.headers)["Subject"]
+    )
+    wrapped_description = "\n".join(
+        [
+            textwrap.fill(line, width=72, replace_whitespace=False)
+            for line in comment["note"].splitlines()
+        ]
+    )
+    body = (
+        f"From: {author['name']} on {git_forge.host}\n{comment['url']}\n\n{wrapped_description}\n"
+        f""
+    )
+    comment = EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=from_email,
+        to=[git_forge.project.listemail],
+        headers=headers,
+        reply_to=[git_forge.project.listemail],
+    )
+    with get_connection(fail_silently=False) as conn:
+        patchwork_parser.parse_mail(comment.message(), list_id=git_forge.project.listid)
+        comment.connection = conn
+        comment.send(fail_silently=False)
+
+
 def _record_bridging(listid: str, merge_id: int, email: EmailMessage) -> None:
     """
     Create the Patchwork submission records. This would happen when the mail

@@ -133,13 +133,16 @@ def comment(payload: dict) -> http.HttpResponse:
     The request body is a JSON document documented at
     https://docs.gitlab.com/ce/user/project/integrations/webhooks.html
     """
-    comment_type = payload["object_attributes"]["noteable_type"]
-    if comment_type == "MergeRequest":
-        pass
-    elif comment_type == "Commit":
-        pass
+    project_id = payload["object_attributes"]["project_id"]
+    if payload["object_attributes"]["noteable_type"] == "MergeRequest":
+        merge_id = payload["merge_request"]["iid"]
+    else:
+        merge_id = None
+    host = urllib.parse.urlsplit(payload["project"]["web_url"]).hostname
 
-    email_comment.apply_async((payload,))
+    email_comment.apply_async(
+        (host, project_id, payload["user"], payload["object_attributes"], merge_id,)
+    )
     return http.HttpResponse("Success!")
 
 
