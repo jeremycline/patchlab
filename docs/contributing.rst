@@ -111,3 +111,24 @@ address, indicating that you agree to the `Developer Certificate of Origin
 	    this project or the open source license(s) involved.
 
 Use ``git commit -s`` to add the Signed-off-by tag.
+
+
+Maintainer Tasks
+================
+
+Creating a release
+------------------
+
+Ensure twine is installed, either provided by your distribution or with pip::
+
+    # Open up patchlab/__init__.py and set the version
+    git add patchlab/__init__.py
+    git commit -s -m "Prep for release"
+    git tag -s v<whatever version you set above>
+    git push origin master v<whatever version you set above>
+
+    # Assumes you've got your virtualenv activated already
+    pip install twine
+    python setup.py sdist bdist_wheel
+    twine upload -s dist/patchlab-<version>.tar.gz dist/patchlab-<version>-py3-none-any.whl
+    # Optionally create a release on GitHub and attach all the files in dist/
