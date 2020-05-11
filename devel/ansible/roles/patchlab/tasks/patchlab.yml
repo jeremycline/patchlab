@@ -62,7 +62,7 @@
 # TODO move this out of site-packages
 - name: Create Patchwork configuration
   template:
-    src: patchwork_config.py
+    src: patchwork_config.py.j2
     dest: /srv/patchwork/lib/python3.8/site-packages/patchwork/settings/production.py
     mode: 0640
     owner: root
