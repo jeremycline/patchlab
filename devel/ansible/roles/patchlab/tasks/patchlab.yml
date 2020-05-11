@@ -50,6 +50,9 @@
     name: "patchlab=={{ patchlab_version }}"
     virtualenv: /srv/patchwork/
     virtualenv_python: python3
+  notify:
+    - restart httpd
+    - restart celery
 
 # TODO move this out of site-packages
 - name: Create Patchwork configuration
