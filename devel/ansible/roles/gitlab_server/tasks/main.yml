@@ -24,9 +24,22 @@
     group: root
     mode: 0644
 
+- name: copy runner repo file
+  template:
+    src: gitlab_gitlab-runner.repo
+    dest: /etc/yum.repos.d/gitlab_gitlab-runner.repo
+    owner: root
+    group: root
+    mode: 0644
+
 - name: install gitlab-ce
   yum:
     name: gitlab-ce-12.4.2
+    state: present
+
+- name: install gitlab-runner
+  yum:
+    name: gitlab-runner
     state: present
 
 - name: add server name to config
