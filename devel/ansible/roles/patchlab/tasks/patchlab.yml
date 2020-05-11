@@ -47,7 +47,7 @@
 - name: Install the Patchlab application
   become_user: patchwork
   pip:
-    name: patchlab
+    name: "patchlab=={{ patchlab_version }}"
     virtualenv: /srv/patchwork/
     virtualenv_python: python3
 

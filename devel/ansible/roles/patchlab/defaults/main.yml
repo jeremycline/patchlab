@@ -7,3 +7,4 @@ gitlab_url: "https://gitlab.com"
 imap_folder: "INBOX"
 letsencrypt_domains:
   - "{{ patchlab_fqdn }}"
+patchlab_version: "0.5.0"
