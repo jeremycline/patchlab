@@ -51,14 +51,6 @@
     virtualenv: /srv/patchwork/
     virtualenv_python: python3
 
-# Until Rabbit is fixed, use redis
-- name: Install the redis client for celery
-  become_user: patchwork
-  pip:
-    name: redis
-    virtualenv: /srv/patchwork/
-    virtualenv_python: python3
-
 # TODO move this out of site-packages
 - name: Create Patchwork configuration
   template:
