@@ -1,7 +1,7 @@
 poll imap.gmail.com protocol imap:
      user "{{ patchwork_email_user }}"
      pass "{{ patchwork_email_password }}"
-     folder "patchlab"
+     folder "{{ imap_folder }}"
      mda "/srv/patchwork/bin/django-admin parsemail --list-id={{ bridged_list_id }}"
      no fetchall
      no rewrite

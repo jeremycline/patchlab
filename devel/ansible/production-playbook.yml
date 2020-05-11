@@ -20,6 +20,7 @@
 # imap_user: IMAP user
 # bridged_list_id: The List-ID being bridged. Necessary as if you're subscribed to the list and Cc'd, Gmail will deduplicate the copies and likely you'll get the non-list copy first
 # letsencrypt_email: Email for letencrypt to send important notifications
+# imap_folder: Folder to fetch for patches; defaults to INBOX
 - hosts: patchlab
   become: true
   become_method: sudo
