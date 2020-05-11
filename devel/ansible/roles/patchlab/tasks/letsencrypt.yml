@@ -1,0 +1,40 @@
+---
+
+- name: Install certbot
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - certbot
+    - certbot-apache
+
+- name: Expand domain arguments
+  set_fact:
+    domain_flags: "{{ letsencrypt_domains | join(\" --domain \") }}"
+
+- name: Get the initial certificate
+  command: >
+      certbot certonly -m {{ letsencrypt_email }} --agree-tos
+      --rsa-key-size 4096
+      --apache
+      --manual-public-ip-logging-ok
+      --domain {{ domain_flags }}
+  args:
+    creates: /etc/letsencrypt/live/
+
+- name: Install certbot automatic renewal service
+  copy:
+    src: certbot-renew.service
+    dest: /etc/systemd/system/certbot-renew.service
+
+- name: Install certbot automatic renewal timer
+  copy:
+    src: certbot-renew.timer
+    dest: /etc/systemd/system/certbot-renew.timer
+
+- name: Enable certbot-renew
+  systemd:
+    name: certbot-renew.timer
+    state: started
+    enabled: true
+    daemon_reload: true

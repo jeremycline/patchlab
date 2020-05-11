@@ -8,8 +8,9 @@
     append: true
 
 - import_tasks: basic_conf.yml
+- import_tasks: httpd.yml
+- import_tasks: letsencrypt.yml
 - import_tasks: db.yml
 - import_tasks: rabbitmq.yml
 - import_tasks: patchlab.yml
-- import_tasks: httpd.yml
 - import_tasks: fetchmail.yml

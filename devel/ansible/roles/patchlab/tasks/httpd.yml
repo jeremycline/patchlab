@@ -7,16 +7,6 @@
     - mod_ssl
     - python3-mod_wsgi
 
-- name: Install httpd configuration
-  template:
-    src: httpd_patchlab.conf
-    dest: /etc/httpd/conf.d/ssl.conf
-    owner: root
-    group: root
-    mode: 0644
-  notify:
-    - restart httpd
-
 - name: open firewall ports
   firewalld:
     service: "{{ item }}"

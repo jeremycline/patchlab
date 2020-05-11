@@ -4,3 +4,5 @@ patchwork_email_port: 587
 patchwork_default_from_email: "patchlab@localhost"
 patchlab_from_email: "GitLab Bridge on behalf of {forge_user} <patchlab@localhost>"
 gitlab_url: "https://gitlab.com"
+letsencrypt_domains:
+  - "{{ patchlab_fqdn }}"

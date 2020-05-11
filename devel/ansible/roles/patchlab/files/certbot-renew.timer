@@ -1,0 +1,10 @@
+[Unit]
+Description=Renew Certbot certificate
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1200
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,7 @@
+[Unit]
+Description=Renew Certbot certificate
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/certbot renew
