@@ -38,4 +38,4 @@
       become: patchwork
       git:
         repo: "https://oauth2:{{ gitlab_repo_write_token }}@gitlab.com/cki-project/kernel-ark.git"
-        dest: "/var/lib/patchlab/{{ gitlab_url }}-{{ gitlab_project_id }}"
+        dest: "/var/lib/patchlab/{{ gitlab_hostname }}-{{ gitlab_project_id }}"
