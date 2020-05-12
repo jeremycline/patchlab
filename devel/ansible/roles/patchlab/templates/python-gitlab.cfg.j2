@@ -1,8 +1,8 @@
 [global]
-default = gitlab.com
+default = {{ gitlab_hostname }}
 ssl_verify = true
 timeout = 30
 
-[gitlab.com]
+[{{ gitlab_hostname }}]
 url = {{ gitlab_url }}
 private_token = {{ vault_gitlab_private_token }}

@@ -22,6 +22,10 @@
 # letsencrypt_email: Email for letencrypt to send important notifications
 # imap_folder: Folder to fetch for patches; defaults to INBOX
 # patchlab_version: Version of patchlab to install, see https://pypi.org/project/patchlab/
+# gitlab_hostname: hostname to use in python-gitlab.cfg
+# gitlab_url: API URL for python-gitlab.cfg
+# gitlab_project_id: Project id for the git repo being cloned
+# gitlab_repo_write_token: An access token with repo write permissions
 - hosts: patchlab
   become: true
   become_method: sudo
@@ -29,3 +33,9 @@
     ansible_python_interpreter: "/usr/bin/python3"
   roles:
     - patchlab
+  tasks:
+    - name: clone git repo for patchlab to bridge
+      become: patchwork
+      git:
+        repo: "https://oauth2:{{ gitlab_repo_write_token }}@gitlab.com/cki-project/kernel-ark.git"
+        dest: "/var/lib/patchlab/{{ gitlab_url }}-{{ gitlab_project_id }}"
