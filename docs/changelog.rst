@@ -4,6 +4,25 @@ Release Notes
 
 .. towncrier release notes start
 
+v0.6.0 (2020-05-14)
+===================
+
+Features
+--------
+
+* Add basic support for bridging GitLab comments to emails. Just add a GitLab
+  web hook to your repository at the same URL as the merge request event
+  handler.
+
+
+Bug Fixes
+---------
+
+* Comments bridged to GitLab from email lacked user information so it was not
+  clear who had left the comment via email. The comment now includes the user's
+  name and that the comment was sent via email.
+
+
 v0.5.0 (2020-05-01)
 ===================
 
