@@ -65,7 +65,11 @@ def submit_gitlab_comment(gitlab: gitlab_module.Gitlab, comment: Comment) -> Non
         merge_request.labels.append(f"{tag}: {address}")
     merge_request.save()
 
-    note = merge_request.notes.create({"body": f"```\n{comment.content}\n```"})
+    note = merge_request.notes.create(
+        {
+            "body": f"{comment.submitter} commented via email:\n```\n{comment.content}\n```"
+        }
+    )
 
     return merge_request, note
 
