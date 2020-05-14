@@ -4,6 +4,18 @@ Release Notes
 
 .. towncrier release notes start
 
+v0.6.1 (2020-05-14)
+===================
+
+Bug Fixes
+---------
+
+* Fixed an issue where merge requests with no description could not be emailed.
+
+* Fixed an issue where GitLab comments would not be emailed if the merge
+  request subject was too long.
+
+
 v0.6.0 (2020-05-14)
 ===================
 
