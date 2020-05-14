@@ -183,10 +183,11 @@ def _reroll(git_forge, merge_request):
 def _merge_request_ccs(git_forge, merge_request):
     """Collect merge request Ccs"""
     ccs = []
-    for line in merge_request.description.splitlines():
-        cc_match = re.search(r"^\s*Cc:\s+(.*)$", line)
-        if cc_match:
-            ccs += cc_match.groups()
+    if merge_request.description is not None:
+        for line in merge_request.description.splitlines():
+            cc_match = re.search(r"^\s*Cc:\s+(.*)$", line)
+            if cc_match:
+                ccs += cc_match.groups()
 
     ccs += [line[3:].strip() for line in merge_request.labels if line.startswith("Cc:")]
     return _clean_ccs(ccs)
@@ -256,12 +257,15 @@ def _prepare_emails(gitlab, git_forge, project, merge_request):
         # We have to wrap each line rather than just using plain textwrap.fill
         # on the whole description as doing so destroys paragraphs and wraps
         # any Ccs into a sentence, which isn't what we want.
-        wrapped_description = "\n".join(
-            [
-                textwrap.fill(line, width=72, replace_whitespace=False)
-                for line in merge_request.description.splitlines()
-            ]
-        )
+        if merge_request.description is not None:
+            wrapped_description = "\n".join(
+                [
+                    textwrap.fill(line, width=72, replace_whitespace=False)
+                    for line in merge_request.description.splitlines()
+                ]
+            )
+        else:
+            wrapped_description = "The merge request had no description."
         body = (
             f"From: {merge_request.author['username']} on {git_forge.host}\n\n"
             f"{wrapped_description}\n"
@@ -376,8 +380,10 @@ def email_comment(gitlab, forge_id, author, comment, merge_id=None) -> None:
         "In-Reply-To": bridged_submission.submission.msgid,
         "X-Patchlab-Comment": comment["url"],
     }
-    subject = (
-        "Re: " + message_from_string(bridged_submission.submission.headers)["Subject"]
+    subject = "Re: " + " ".join(
+        message_from_string(bridged_submission.submission.headers)[
+            "Subject"
+        ].splitlines()
     )
     wrapped_description = "\n".join(
         [
