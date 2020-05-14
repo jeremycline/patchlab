@@ -188,7 +188,7 @@ def _merge_request_ccs(git_forge, merge_request):
         if cc_match:
             ccs += cc_match.groups()
 
-    ccs += [l[3:].strip() for l in merge_request.labels if l.startswith("Cc:")]
+    ccs += [line[3:].strip() for line in merge_request.labels if line.startswith("Cc:")]
     return _clean_ccs(ccs)
 
 
