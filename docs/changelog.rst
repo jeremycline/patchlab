@@ -4,6 +4,20 @@ Release Notes
 
 .. towncrier release notes start
 
+v0.6.2 (2020-05-15)
+===================
+
+Bug Fixes
+---------
+
+* Fix the subject of Gitlab comments bridged to email to include the author's
+  name, not ["author"].
+
+* Fix an issue where emailed comments bridged to Gitlab would generate a
+  Gitlab -> email comment from the bridge. The bridge will now ignore all
+  comments made by the Gitlab user being used to bridge comments.
+
+
 v0.6.1 (2020-05-14)
 ===================
 
