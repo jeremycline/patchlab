@@ -98,9 +98,13 @@ def email_comment(
         _log.error("Missing Gitlab configuration for %s", gitlab_host)
         return
     try:
-        gitlab2email.email_comment(
-            gitlab, project_id, comment_author, comment, merge_id
-        )
+        gitlab.auth()
+        if gitlab.user.username != comment_author["username"]:
+            gitlab2email.email_comment(
+                gitlab, project_id, comment_author, comment, merge_id
+            )
+        else:
+            _log.info("Ignoring comment posted by the bridge user.")
     except Exception as e:
         _log.warning("Failed to send gitlab comment as email, retrying...")
         raise merge_request_hook.retry(exc=e, throw=False, countdown=60)

@@ -372,7 +372,7 @@ def email_comment(gitlab, forge_id, author, comment, merge_id=None) -> None:
         )
         return
 
-    from_email = settings.PATCHLAB_FROM_EMAIL.format(forge_user=["author"])
+    from_email = settings.PATCHLAB_FROM_EMAIL.format(forge_user=author["name"])
     # From the bridged_submission, find the in-reply-to, create email.
     headers = {
         "Date": email_utils.formatdate(localtime=settings.EMAIL_USE_LOCALTIME),
